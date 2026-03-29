@@ -22,6 +22,11 @@
     100% { background-position: -200% 0; }
   }
   
+  @keyframes shimmerSkeleton {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
@@ -42,12 +47,18 @@
     @apply bg-soft-white/80 backdrop-blur-md border border-rose-gold/30 shadow-lg;
   }
 
+  .skeleton {
+    background: linear-gradient(90deg, #f0e8e8 25%, #e8d8d8 50%, #f0e8e8 75%);
+    background-size: 200% 100%;
+    animation: shimmerSkeleton 1.5s infinite;
+  }
+
   .btn-primary {
-    @apply inline-block px-8 py-3 bg-rose-gold hover:bg-rose-gold-dark text-white font-body uppercase tracking-[0.2em] transition-colors duration-300 text-sm font-medium;
+    @apply inline-block px-8 py-3 bg-rose-gold hover:bg-rose-gold-dark text-white hover:text-white font-body uppercase tracking-[0.2em] transition-colors duration-300 text-sm font-medium;
   }
 
   .btn-outline {
-    @apply inline-block px-8 py-3 bg-transparent border-2 border-rose-gold text-rose-gold hover:bg-rose-gold text-inherit font-body uppercase tracking-[0.2em] transition-colors duration-300 text-sm font-medium;
+    @apply inline-block px-8 py-3 bg-transparent border-2 border-rose-gold text-rose-gold hover:bg-rose-gold hover:text-white font-body uppercase tracking-[0.2em] transition-colors duration-300 text-sm font-medium;
   }
 
   .ornament {

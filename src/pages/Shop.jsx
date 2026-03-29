@@ -1,23 +1,34 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { PRODUCTS, CATEGORIES } from '../data/products';
+import { Search } from 'lucide-react';
+import { CATEGORIES } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
+import ProductSkeleton from '../components/ui/ProductSkeleton';
+import { useProducts } from '../hooks/useProducts';
 
 export default function Shop() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialCategory = queryParams.get('category') || 'All';
 
+  const { products, loading } = useProducts();
+
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sortOrder, setSortOrder] = useState('featured'); // featured, low-high, high-low
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     setActiveCategory(initialCategory);
   }, [initialCategory]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...PRODUCTS];
+    let result = [...products];
     
+    // Search Query
+    if (searchQuery.trim() !== '') {
+      result = result.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+
     // Filter by Category
     if (activeCategory !== 'All') {
       result = result.filter(p => p.category === activeCategory);
@@ -34,7 +45,7 @@ export default function Shop() {
     }
     
     return result;
-  }, [activeCategory, sortOrder]);
+  }, [activeCategory, sortOrder, products]);
 
   return (
     <div className="w-full">
@@ -50,6 +61,18 @@ export default function Shop() {
       {/* Main Content */}
       <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
         
+        {/* Search Bar */}
+        <div className="mb-10 max-w-md w-full relative">
+          <input 
+            type="text" 
+            placeholder="Search products by name..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-soft-white border border-rose-gold/30 px-4 py-3 pr-10 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors"
+          />
+          <Search size={18} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-rose-gold/60 pointer-events-none" />
+        </div>
+
         {/* Filters & Sort */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-rose-gold/20 pb-8 mb-12">
           
@@ -59,10 +82,10 @@ export default function Shop() {
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`font-body uppercase tracking-wider text-sm px-4 py-2 transition-colors duration-300 border-b-2 ${
+                className={`font-body uppercase tracking-wider text-sm px-4 py-2 rounded-full transition-colors duration-300 ${
                   activeCategory === cat 
-                    ? 'border-rose-gold text-rose-gold' 
-                    : 'border-transparent text-deep-brown/60 hover:text-deep-brown'
+                    ? 'bg-rose-gold text-white' 
+                    : 'bg-transparent text-deep-brown/60 hover:bg-rose-gold hover:text-white'
                 }`}
               >
                 {cat}
@@ -86,7 +109,13 @@ export default function Shop() {
         </div>
 
         {/* Product Grid */}
-        {filteredProducts.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeleton key={`skeleton-${i}`} />
+            ))}
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
             {filteredProducts.map(product => (
               <ProductCard key={product.id} product={product} />
@@ -99,10 +128,13 @@ export default function Shop() {
               We couldn't find any products in this category at the moment.
             </p>
             <button 
-              onClick={() => setActiveCategory('All')} 
+              onClick={() => {
+                setActiveCategory('All');
+                setSearchQuery('');
+              }} 
               className="btn-outline"
             >
-              View All Pieces
+              Clear Filters
             </button>
           </div>
         )}

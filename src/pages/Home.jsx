@@ -1,11 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, Sparkles, HeartHandshake, ShieldCheck, Diamond } from 'lucide-react';
-import { FEATURED_PRODUCTS, CATEGORIES } from '../data/products';
+import { CATEGORIES } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
+import ProductSkeleton from '../components/ui/ProductSkeleton';
+import { useProducts } from '../hooks/useProducts';
 
 export default function Home() {
+  const { featuredProducts, loading } = useProducts();
+
   return (
     <div className="w-full">
       {/* Hero Section */}
@@ -70,7 +74,7 @@ export default function Home() {
             <Link to="/shop" className="btn-primary">
               Shop Collection
             </Link>
-            <Link to="/about" className="btn-outline">
+            <Link to="/about" className="btn-outline border-champagne text-champagne hover:bg-white/20 hover:text-white hover:border-transparent">
               Our Story
             </Link>
           </motion.div>
@@ -113,11 +117,19 @@ export default function Home() {
           </p>
         </div>
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {FEATURED_PRODUCTS.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeleton key={`skeleton-${i}`} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {featuredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
         
         <div className="mt-16 text-center">
           <Link to="/shop" className="btn-outline">

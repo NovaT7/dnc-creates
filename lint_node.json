@@ -1,0 +1,474 @@
+[
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\components\\layout\\Navbar.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 6,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 6,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "motion"
+            },
+            "fix": {
+              "range": [
+                323,
+                330
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'motion'."
+          }
+        ]
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n  22 |   useEffect(() => {\n  23 |     if (totalItems > prevTotal.current) {\n> 24 |       setBounceKey(prev => prev + 1);\n     |       ^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  25 |     }\n  26 |     prevTotal.current = totalItems;\n  27 |   }, [totalItems]);",
+        "line": 24,
+        "column": 7,
+        "nodeType": null,
+        "endLine": 24,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n  36 |\n  37 |   useEffect(() => {\n> 38 |     setIsMobileMenuOpen(false);\n     |     ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect\n  39 |     setIsDropdownOpen(false);\n  40 |   }, [location.pathname]);\n  41 |",
+        "line": 38,
+        "column": 5,
+        "nodeType": null,
+        "endLine": 38,
+        "endColumn": 24
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 3,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React, { useState, useEffect, useRef } from 'react';\nimport { NavLink, useLocation, Link } from 'react-router-dom';\nimport { ShoppingBag, Menu, X, LogOut, LayoutDashboard, Heart } from 'lucide-react';\nimport { useCart } from '../../context/CartContext';\nimport { useAuth } from '../../context/AuthContext';\nimport { motion, AnimatePresence } from 'framer-motion';\n\nexport default function Navbar() {\n  const [isScrolled, setIsScrolled] = useState(false);\n  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);\n  const [isDropdownOpen, setIsDropdownOpen] = useState(false);\n  const { totalItems } = useCart();\n  const { user, logout, isAdmin } = useAuth();\n  const location = useLocation();\n  const dropdownRef = useRef(null);\n\n  const isHome = location.pathname === '/';\n  \n  const [bounceKey, setBounceKey] = useState(0);\n  const prevTotal = useRef(totalItems);\n\n  useEffect(() => {\n    if (totalItems > prevTotal.current) {\n      setBounceKey(prev => prev + 1);\n    }\n    prevTotal.current = totalItems;\n  }, [totalItems]);\n\n  useEffect(() => {\n    const handleScroll = () => {\n      setIsScrolled(window.scrollY > 50);\n    };\n    window.addEventListener('scroll', handleScroll);\n    return () => window.removeEventListener('scroll', handleScroll);\n  }, []);\n\n  useEffect(() => {\n    setIsMobileMenuOpen(false);\n    setIsDropdownOpen(false);\n  }, [location.pathname]);\n\n  // Close dropdown on outside click\n  useEffect(() => {\n    const handleClickOutside = (e) => {\n      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {\n        setIsDropdownOpen(false);\n      }\n    };\n    document.addEventListener('mousedown', handleClickOutside);\n    return () => document.removeEventListener('mousedown', handleClickOutside);\n  }, []);\n\n  const navClasses = `fixed w-full top-0 z-50 transition-all duration-300 ${\n    isHome && !isScrolled\n      ? 'bg-transparent text-white py-6'\n      : 'bg-soft-white/95 backdrop-blur-md shadow-sm text-deep-brown py-4'\n  }`;\n\n  const linkClasses = ({ isActive }) =>\n    `uppercase tracking-widest text-sm font-medium transition-colors hover:text-rose-gold ${\n      isActive ? 'text-rose-gold' : ''\n    }`;\n\n  const getInitials = () => {\n    const name = user?.displayName || user?.email || 'U';\n    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);\n  };\n\n  return (\n    <nav className={navClasses}>\n      <div className=\"max-w-7xl mx-auto px-6 lg:px-8\">\n        <div className=\"flex justify-between items-center\">\n          \n          {/* Mobile Menu Button */}\n          <div className=\"md:hidden flex items-center\">\n            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>\n              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}\n            </button>\n          </div>\n\n          {/* Logo */}\n          <div className=\"flex-1 md:flex-none flex justify-center md:justify-start\">\n            <Link to=\"/\" className=\"font-display text-3xl font-semibold\">\n              <span className={isHome && !isScrolled ? 'text-white' : 'text-shimmer'}>\n                DNC Creates\n              </span>\n            </Link>\n          </div>\n\n          {/* Desktop Links */}\n          <div className=\"hidden md:flex flex-1 justify-center space-x-10\">\n            <NavLink to=\"/\" className={linkClasses}>Home</NavLink>\n            <NavLink to=\"/shop\" className={linkClasses}>Shop</NavLink>\n            <NavLink to=\"/about\" className={linkClasses}>About</NavLink>\n            <NavLink to=\"/contact\" className={linkClasses}>Contact</NavLink>\n          </div>\n\n          {/* Right: Admin + Cart + User */}\n          <div className=\"flex items-center justify-end gap-4\">\n            {/* Admin Panel Icon — only for admin */}\n            {isAdmin && (\n              <Link\n                to=\"/admin\"\n                title=\"Admin Panel\"\n                className=\"relative hover:text-rose-gold transition-colors\"\n              >\n                <LayoutDashboard size={22} strokeWidth={1.5} />\n              </Link>\n            )}\n\n            {/* Wishlist Icon */}\n            {user && (\n              <Link to=\"/wishlist\" className=\"relative hover:text-rose-gold transition-colors\" title=\"Wishlist\">\n                <Heart size={24} strokeWidth={1.5} />\n              </Link>\n            )}\n\n            {/* Cart Icon */}\n            <Link to=\"/cart\" className=\"relative hover:text-rose-gold transition-colors block\">\n              <motion.div\n                key={bounceKey}\n                animate={bounceKey > 0 ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}\n                transition={{ duration: 0.4, ease: \"easeInOut\" }}\n              >\n                <ShoppingBag size={24} strokeWidth={1.5} />\n              </motion.div>\n              <AnimatePresence>\n                {totalItems > 0 && (\n                  <motion.span \n                    key={totalItems}\n                    initial={{ y: 10, opacity: 0, scale: 0.5 }}\n                    animate={{ y: 0, opacity: 1, scale: 1 }}\n                    exit={{ y: -10, opacity: 0, scale: 0.5 }}\n                    transition={{ duration: 0.2 }}\n                    className=\"absolute -top-2 -right-2 bg-rose-gold text-white text-[10px] font-bold h-5 w-5 rounded-full flex items-center justify-center transform origin-center\"\n                  >\n                    {totalItems}\n                  </motion.span>\n                )}\n              </AnimatePresence>\n            </Link>\n\n            {/* User / Auth */}\n            {user ? (\n              <div className=\"relative\" ref={dropdownRef}>\n                <button\n                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}\n                  className=\"w-9 h-9 rounded-full bg-rose-gold text-white flex items-center justify-center text-sm font-medium overflow-hidden hover:ring-2 hover:ring-rose-gold/50 transition-all\"\n                  aria-label=\"User menu\"\n                >\n                  {user.photoURL ? (\n                    <img src={user.photoURL} alt=\"avatar\" className=\"w-full h-full object-cover\" />\n                  ) : (\n                    getInitials()\n                  )}\n                </button>\n                <AnimatePresence>\n                  {isDropdownOpen && (\n                    <motion.div\n                      initial={{ opacity: 0, y: -8, scale: 0.95 }}\n                      animate={{ opacity: 1, y: 0, scale: 1 }}\n                      exit={{ opacity: 0, y: -8, scale: 0.95 }}\n                      transition={{ duration: 0.15 }}\n                      className=\"absolute right-0 mt-2 w-48 bg-white shadow-lg border border-rose-gold/10 rounded-sm overflow-hidden\"\n                    >\n                      <div className=\"px-4 py-3 border-b border-rose-gold/10\">\n                        <p className=\"text-xs text-deep-brown/50 uppercase tracking-wider\">Logged in as</p>\n                        <p className=\"text-sm font-medium text-deep-brown truncate\">{user.displayName || user.email}</p>\n                      </div>\n                      <Link\n                        to=\"/orders\"\n                        className=\"w-full flex items-center gap-2 px-4 py-3 text-sm text-deep-brown/70 hover:text-rose-gold hover:bg-rose-gold/5 transition-colors border-b border-rose-gold/5\"\n                      >\n                        <ShoppingBag size={14} />\n                        Order History\n                      </Link>\n                      {isAdmin && (\n                        <Link\n                          to=\"/admin\"\n                          className=\"w-full flex items-center gap-2 px-4 py-3 text-sm text-deep-brown/70 hover:text-rose-gold hover:bg-rose-gold/5 transition-colors\"\n                        >\n                          <LayoutDashboard size={14} />\n                          Admin Panel\n                        </Link>\n                      )}\n                      <button\n                        onClick={logout}\n                        className=\"w-full flex items-center gap-2 px-4 py-3 text-sm text-deep-brown/70 hover:text-red-500 hover:bg-red-50 transition-colors\"\n                      >\n                        <LogOut size={14} />\n                        Logout\n                      </button>\n                    </motion.div>\n                  )}\n                </AnimatePresence>\n              </div>\n            ) : (\n              <Link\n                to=\"/login\"\n                className={`hidden md:block uppercase tracking-widest text-sm font-medium transition-colors hover:text-rose-gold ${isHome && !isScrolled ? 'text-white/80' : 'text-deep-brown/60'}`}\n              >\n                Login\n              </Link>\n            )}\n          </div>\n        </div>\n      </div>\n\n      {/* Mobile Menu */}\n      <AnimatePresence>\n        {isMobileMenuOpen && (\n          <motion.div\n            initial={{ height: 0, opacity: 0 }}\n            animate={{ height: 'auto', opacity: 1 }}\n            exit={{ height: 0, opacity: 0 }}\n            className=\"md:hidden bg-soft-white border-t border-rose-gold/20 overflow-hidden\"\n          >\n            <div className=\"flex flex-col px-6 py-6 space-y-4 text-deep-brown\">\n              <NavLink to=\"/\" className={linkClasses}>Home</NavLink>\n              <NavLink to=\"/shop\" className={linkClasses}>Shop</NavLink>\n              <NavLink to=\"/about\" className={linkClasses}>About</NavLink>\n              <NavLink to=\"/contact\" className={linkClasses}>Contact</NavLink>\n              {!user && (\n                <NavLink to=\"/login\" className={linkClasses}>Login</NavLink>\n              )}\n              {user && (\n                <NavLink to=\"/orders\" className={linkClasses}>Order History</NavLink>\n              )}\n              {user && isAdmin && (\n                <NavLink to=\"/admin\" className={linkClasses}>Admin Panel</NavLink>\n              )}\n              {user && (\n                <button onClick={logout} className=\"text-left uppercase tracking-widest text-sm font-medium text-red-400 hover:text-red-600 transition-colors\">\n                  Logout\n                </button>\n              )}\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n    </nav>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\components\\ui\\ProductCard.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 3,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 3,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "motion"
+            },
+            "fix": {
+              "range": [
+                68,
+                107
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'motion'."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React from 'react';\nimport { Link } from 'react-router-dom';\nimport { motion } from 'framer-motion';\nimport { Heart } from 'lucide-react';\nimport { useWishlist } from '../../context/WishlistContext';\n\nexport default function ProductCard({ product }) {\n  const { toggleWishlist, isInWishlist } = useWishlist();\n  const isWished = isInWishlist(product.id);\n\n  const handleWishlistClick = (e) => {\n    e.preventDefault();\n    e.stopPropagation();\n    toggleWishlist(product.id);\n  };\n\n  return (\n    <motion.div \n      whileHover={{ y: -5 }}\n      className=\"group relative flex flex-col h-full bg-soft-white/40 cursor-pointer\"\n    >\n      <Link to={`/shop/${product.id}`} className=\"block h-full flex flex-col relative overflow-hidden\">\n        {/* Badge */}\n        {!product.inStock ? (\n          <div className=\"absolute top-4 left-4 z-20 bg-gray-500 text-white text-xs font-body uppercase tracking-wider px-3 py-1\">\n            Out of Stock\n          </div>\n        ) : product.badge ? (\n          <div className=\"absolute top-4 left-4 z-20 bg-rose-gold text-white text-xs font-body uppercase tracking-wider px-3 py-1\">\n            {product.badge}\n          </div>\n        ) : null}\n\n        <button \n          onClick={handleWishlistClick}\n          className=\"absolute top-4 right-4 z-20 w-8 h-8 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center text-rose-gold hover:bg-rose-gold hover:text-white transition-colors shadow-sm\"\n          aria-label=\"Add to Wishlist\"\n        >\n          <Heart size={16} fill={isWished ? 'currentColor' : 'none'} strokeWidth={isWished ? 0 : 2} />\n        </button>\n        \n        {/* Image Box */}\n        <div className=\"aspect-square w-full overflow-hidden bg-champagne mb-4 relative\">\n          <img \n            src={product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0])} \n            alt={product.name} \n            className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'opacity-60 grayscale' : ''}`}\n          />\n          {/* Overlay gradient for a premium feel on hover */}\n          <div className=\"absolute inset-0 bg-deep-brown/0 group-hover:bg-deep-brown/10 transition-colors duration-300 pointer-events-none\" />\n          {!product.inStock && (\n            <div className=\"absolute inset-0 bg-white/30 backdrop-grayscale pointer-events-none z-10\" />\n          )}\n        </div>\n\n        {/* Details Box */}\n        <div className=\"px-2 pb-4 flex flex-col flex-grow text-center\">\n          <span className=\"text-rose-gold/70 text-xs font-body uppercase tracking-widest mb-2 block\">\n            {product.category}\n          </span>\n          <h3 className=\"font-display text-lg text-deep-brown mb-2 leading-snug\">\n            {product.name}\n          </h3>\n          <div className=\"mt-auto flex items-center justify-center space-x-2\">\n            <span className=\"font-body text-deep-brown font-medium\">₹{product.price}</span>\n            {product.originalPrice && (\n              <span className=\"font-body text-deep-brown/40 line-through text-sm\">\n                ₹{product.originalPrice}\n              </span>\n            )}\n          </div>\n        </div>\n      </Link>\n    </motion.div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\context\\AuthContext.jsx",
+    "messages": [
+      {
+        "ruleId": "react-refresh/only-export-components",
+        "severity": 2,
+        "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.",
+        "line": 14,
+        "column": 17,
+        "nodeType": "Identifier",
+        "messageId": "namedExport",
+        "endLine": 14,
+        "endColumn": 24
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React, { createContext, useContext, useState, useEffect } from 'react';\nimport { \n  signInWithPopup, GoogleAuthProvider, \n  signInWithEmailAndPassword, \n  createUserWithEmailAndPassword, \n  signOut, onAuthStateChanged,\n  updateProfile\n} from 'firebase/auth';\nimport { doc, getDoc, setDoc } from 'firebase/firestore';\nimport { auth, db } from '../firebase';\n\nconst AuthContext = createContext();\n\nexport function useAuth() {\n  return useContext(AuthContext);\n}\n\nexport function AuthProvider({ children }) {\n  const [user, setUser] = useState(null);\n  const [loading, setLoading] = useState(true);\n\n  const isAdmin = user?.email === import.meta.env.VITE_ADMIN_EMAIL;\n\n  useEffect(() => {\n    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {\n      if (currentUser) {\n        // Fetch or create user doc\n        const userRef = doc(db, 'users', currentUser.uid);\n        const userDoc = await getDoc(userRef);\n        \n        if (!userDoc.exists()) {\n          await setDoc(userRef, {\n            displayName: currentUser.displayName,\n            email: currentUser.email,\n            photoURL: currentUser.photoURL,\n            createdAt: new Date().toISOString(),\n            role: 'user'\n          });\n        }\n      }\n      setUser(currentUser);\n      setLoading(false);\n    });\n\n    return unsubscribe;\n  }, []);\n\n  const loginWithGoogle = async () => {\n    const provider = new GoogleAuthProvider();\n    return signInWithPopup(auth, provider);\n  };\n\n  const loginWithEmail = (email, password) => {\n    return signInWithEmailAndPassword(auth, email, password);\n  };\n\n  const registerWithEmail = async (email, password, displayName) => {\n    const userCredential = await createUserWithEmailAndPassword(auth, email, password);\n    await updateProfile(userCredential.user, { displayName });\n    return userCredential;\n  };\n\n  const logout = () => {\n    return signOut(auth);\n  };\n\n  const value = {\n    user,\n    loading,\n    isAdmin,\n    loginWithGoogle,\n    loginWithEmail,\n    registerWithEmail,\n    logout\n  };\n\n  return (\n    <AuthContext.Provider value={value}>\n      {!loading && children}\n    </AuthContext.Provider>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\context\\CartContext.jsx",
+    "messages": [
+      {
+        "ruleId": "react-refresh/only-export-components",
+        "severity": 2,
+        "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.",
+        "line": 8,
+        "column": 17,
+        "nodeType": "Identifier",
+        "messageId": "namedExport",
+        "endLine": 8,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "react-hooks/set-state-in-effect",
+        "severity": 2,
+        "message": "Error: Calling setState synchronously within an effect can trigger cascading renders\n\nEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:\n* Update external systems with the latest state from React.\n* Subscribe for updates from some external system, calling setState in a callback function when external state changes.\n\nCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).\n\n  21 |       if (saved) {\n  22 |         try {\n> 23 |           setItems(JSON.parse(saved));\n     |           ^^^^^^^^ Avoid calling setState() directly within an effect\n  24 |         } catch (error) {\n  25 |           setItems([]);\n  26 |         }",
+        "line": 23,
+        "column": 11,
+        "nodeType": null,
+        "endLine": 23,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'error' is defined but never used.",
+        "line": 24,
+        "column": 18,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'e' is defined but never used.",
+        "line": 45,
+        "column": 16,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 45,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "no-empty",
+        "severity": 2,
+        "message": "Empty block statement.",
+        "line": 45,
+        "column": 19,
+        "nodeType": "BlockStatement",
+        "messageId": "unexpected",
+        "endLine": 45,
+        "endColumn": 21,
+        "suggestions": [
+          {
+            "messageId": "suggestComment",
+            "data": {
+              "type": "block"
+            },
+            "fix": {
+              "range": [
+                1265,
+                1265
+              ],
+              "text": " /* empty */ "
+            },
+            "desc": "Add comment inside empty block statement."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 5,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React, { createContext, useContext, useState, useEffect } from 'react';\nimport { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';\nimport { db } from '../firebase';\nimport { useAuth } from './AuthContext';\n\nconst CartContext = createContext();\n\nexport function useCart() {\n  return useContext(CartContext);\n}\n\nexport function CartProvider({ children }) {\n  const { user } = useAuth();\n  const [items, setItems] = useState([]);\n  const [syncing, setSyncing] = useState(false);\n\n  // Load from local storage initially if not logged in\n  useEffect(() => {\n    if (!user) {\n      const saved = localStorage.getItem('dnc-cart');\n      if (saved) {\n        try {\n          setItems(JSON.parse(saved));\n        } catch (error) {\n          setItems([]);\n        }\n      }\n    }\n  }, [user]);\n\n  // Sync with Firestore when user logs in/changes\n  useEffect(() => {\n    if (!user) return;\n\n    const cartRef = doc(db, 'carts', user.uid);\n    let unsubscribe = () => {};\n\n    const syncCart = async () => {\n      setSyncing(true);\n      const cartDoc = await getDoc(cartRef);\n      const localCartStr = localStorage.getItem('dnc-cart');\n      let localCart = [];\n      try {\n        if (localCartStr) localCart = JSON.parse(localCartStr);\n      } catch (e) {}\n\n      let mergedItems = [];\n      if (cartDoc.exists()) {\n        const firestoreCart = cartDoc.data().items || [];\n        // Merging: Combine items based on ID\n        const combined = [...firestoreCart];\n        for (const localItem of localCart) {\n          const existing = combined.find(i => i.id === localItem.id);\n          if (existing) {\n            existing.qty = Math.max(existing.qty, localItem.qty);\n          } else {\n            combined.push(localItem);\n          }\n        }\n        mergedItems = combined;\n      } else {\n        mergedItems = localCart;\n      }\n      \n      await setDoc(cartRef, { items: mergedItems, updatedAt: new Date().toISOString() }, { merge: true });\n      localStorage.removeItem('dnc-cart'); // Clear local cart after merge\n\n      // Setup listener\n      unsubscribe = onSnapshot(cartRef, (docSnap) => {\n        if (docSnap.exists()) {\n          setItems(docSnap.data().items || []);\n        } else {\n          setItems([]);\n        }\n        setSyncing(false);\n      });\n    };\n\n    syncCart();\n\n    return () => unsubscribe();\n  }, [user]);\n\n  // Update logic\n  const saveCart = async (newItems) => {\n    setItems(newItems);\n    if (user) {\n      setSyncing(true);\n      await setDoc(doc(db, 'carts', user.uid), {\n        items: newItems,\n        updatedAt: new Date().toISOString()\n      }, { merge: true });\n      setSyncing(false);\n    } else {\n      localStorage.setItem('dnc-cart', JSON.stringify(newItems));\n    }\n  };\n\n  const addItem = (product) => {\n    const existing = items.find(item => item.id === product.id);\n    let newItems;\n    if (existing) {\n      newItems = items.map(item => \n        item.id === product.id ? { ...item, qty: item.qty + 1 } : item\n      );\n    } else {\n      const cartItem = {\n        id: product.id,\n        name: product.name,\n        category: product.category,\n        price: product.price,\n        image: product.image || product.imageUrl || null, // handle different image keys\n        qty: 1\n      };\n      newItems = [...items, cartItem];\n    }\n    saveCart(newItems);\n  };\n\n  const removeItem = (id) => {\n    saveCart(items.filter(item => item.id !== id));\n  };\n\n  const updateQty = (id, qty) => {\n    if (qty < 1) {\n      removeItem(id);\n      return;\n    }\n    saveCart(items.map(item => \n      item.id === id ? { ...item, qty } : item\n    ));\n  };\n\n  const clearCart = () => saveCart([]);\n\n  const totalItems = items.reduce((sum, item) => sum + item.qty, 0);\n  const totalPrice = items.reduce((sum, item) => sum + (item.price * item.qty), 0);\n\n  const value = {\n    items,\n    syncing,\n    addItem,\n    removeItem,\n    updateQty,\n    clearCart,\n    totalItems,\n    totalPrice\n  };\n\n  return (\n    <CartContext.Provider value={value}>\n      {children}\n    </CartContext.Provider>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\context\\WishlistContext.jsx",
+    "messages": [
+      {
+        "ruleId": "react-refresh/only-export-components",
+        "severity": 2,
+        "message": "Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.",
+        "line": 8,
+        "column": 17,
+        "nodeType": "Identifier",
+        "messageId": "namedExport",
+        "endLine": 8,
+        "endColumn": 28
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React, { createContext, useContext, useState, useEffect } from 'react';\nimport { doc, getDoc, setDoc } from 'firebase/firestore';\nimport { db } from '../firebase';\nimport { useAuth } from './AuthContext';\n\nconst WishlistContext = createContext();\n\nexport function useWishlist() {\n  return useContext(WishlistContext);\n}\n\nexport function WishlistProvider({ children }) {\n  const { user } = useAuth();\n  const [wishlist, setWishlist] = useState([]);\n  const [loading, setLoading] = useState(true);\n\n  // Load wishlist on auth state change\n  useEffect(() => {\n    let isMounted = true;\n    \n    async function loadWishlist() {\n      if (!user) {\n        if (isMounted) {\n          setWishlist([]);\n          setLoading(false);\n        }\n        return;\n      }\n\n      setLoading(true);\n      try {\n        const userRef = doc(db, 'users', user.uid);\n        const userDoc = await getDoc(userRef);\n        \n        if (userDoc.exists() && userDoc.data().wishlist) {\n          if (isMounted) setWishlist(userDoc.data().wishlist);\n        }\n      } catch (error) {\n        console.error(\"Error loading wishlist:\", error);\n      } finally {\n        if (isMounted) setLoading(false);\n      }\n    }\n\n    loadWishlist();\n    \n    return () => { isMounted = false; };\n  }, [user]);\n\n  // Sync with Firestore whenever updated locally\n  const syncWishlist = async (newWishlist) => {\n    if (!user) return;\n    try {\n      const userRef = doc(db, 'users', user.uid);\n      await setDoc(userRef, { wishlist: newWishlist }, { merge: true });\n    } catch (error) {\n      console.error(\"Error saving wishlist:\", error);\n    }\n  };\n\n  const toggleWishlist = async (productId) => {\n    if (!user) {\n      alert(\"Please login to save items to your wishlist.\");\n      return;\n    }\n\n    setWishlist(prev => {\n      const newWishlist = prev.includes(productId) \n        ? prev.filter(id => id !== productId)\n        : [...prev, productId];\n      \n      // Async sync\n      syncWishlist(newWishlist);\n      return newWishlist;\n    });\n  };\n\n  const isInWishlist = (productId) => {\n    return wishlist.includes(productId);\n  };\n\n  return (\n    <WishlistContext.Provider value={{ wishlist, loading, toggleWishlist, isInWishlist }}>\n      {children}\n    </WishlistContext.Provider>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\pages\\About.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 2,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "motion"
+            },
+            "fix": {
+              "range": [
+                27,
+                66
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'motion'."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React from 'react';\nimport { motion } from 'framer-motion';\n\nexport default function About() {\n  return (\n    <div className=\"w-full\">\n      {/* Page Header */}\n      <header className=\"bg-champagne py-16 text-center border-b border-rose-gold/20\">\n        <h1 className=\"text-5xl text-deep-brown mb-4\">Our Story</h1>\n        <div className=\"ornament\"></div>\n        <p className=\"font-body tracking-widest uppercase text-sm text-deep-brown/70 mt-4\">\n          The art of handcrafted elegance\n        </p>\n      </header>\n\n      {/* Brand Story */}\n      <section className=\"py-24 max-w-7xl mx-auto px-6 lg:px-8\">\n        <div className=\"grid grid-cols-1 md:grid-cols-2 gap-16 items-center\">\n          \n          <div className=\"order-2 md:order-1 flex flex-col justify-center\">\n            <h2 className=\"font-display text-4xl text-deep-brown mb-6\">Born from a Passion for Perfection</h2>\n            <div className=\"w-12 h-[1px] bg-rose-gold mb-8\"></div>\n            \n            <div className=\"space-y-6 font-body text-deep-brown/80 leading-relaxed\">\n              <p>\n                DNC Creates began as a small vision: to craft beautiful, meaningful pieces of jewellery that celebrate the wearer's unique journey. We believe that true luxury lies not in mass production, but in the careful, intentional crafting of individual pieces.\n              </p>\n              <p>\n                From delicate diamond rings to intricately engraved lockets, each creation is a testament to our dedication to traditional craftsmanship blended with modern aesthetics. \n              </p>\n              <p>\n                We source only premium materials, ensuring that every ring, locket, keychain, and bracelet isn't just an accessory, but a keepsake to be treasured for generations.\n              </p>\n            </div>\n          </div>\n\n          <div className=\"order-1 md:order-2\">\n            <div className=\"glass-card p-12 flex items-center justify-center relative overflow-hidden group\">\n              <div className=\"absolute inset-0 bg-rose-gold/5 transform rotate-3 -z-10 group-hover:rotate-6 transition-transform duration-500\"></div>\n              <img \n                src=\"/src/assets/images/logo1.png\" \n                alt=\"DNC Creates Logo\" \n                className=\"w-full max-w-md drop-shadow-xl\"\n              />\n            </div>\n          </div>\n\n        </div>\n      </section>\n\n      {/* Mission / Vision / Promise */}\n      <section className=\"bg-deep-brown py-24 text-champagne\">\n        <div className=\"max-w-7xl mx-auto px-6 lg:px-8\">\n          <div className=\"text-center mb-16\">\n            <h2 className=\"text-4xl text-champagne mb-4\">Our Core Values</h2>\n            <div className=\"ornament mb-0\"></div>\n          </div>\n\n          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-12\">\n            \n            <motion.div \n              whileHover={{ y: -10 }}\n              className=\"bg-Champagne/5 border border-rose-gold/30 p-10 text-center\"\n            >\n              <h3 className=\"font-display text-3xl text-rose-gold-light mb-4\">Our Mission</h3>\n              <p className=\"font-body text-champagne/80 leading-relaxed text-sm\">\n                To handcraft timeless, elegant jewellery that makes everyday moments feel extraordinary and celebrates the uniqueness of every individual.\n              </p>\n            </motion.div>\n\n            <motion.div \n              whileHover={{ y: -10 }}\n              className=\"bg-Champagne/5 border border-rose-gold/30 p-10 text-center\"\n            >\n              <h3 className=\"font-display text-3xl text-rose-gold-light mb-4\">Our Vision</h3>\n              <p className=\"font-body text-champagne/80 leading-relaxed text-sm\">\n                To be the most loved destination for bespoke and handcrafted accessories, known worldwide for our unmatched quality and heartfelt service.\n              </p>\n            </motion.div>\n\n            <motion.div \n              whileHover={{ y: -10 }}\n              className=\"bg-Champagne/5 border border-rose-gold/30 p-10 text-center\"\n            >\n              <h3 className=\"font-display text-3xl text-rose-gold-light mb-4\">Our Promise</h3>\n              <p className=\"font-body text-champagne/80 leading-relaxed text-sm\">\n                We promise uncompromising quality, ethical sourcing of materials, and an unwavering commitment to bringing your dream designs to life.\n              </p>\n            </motion.div>\n\n          </div>\n        </div>\n      </section>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\pages\\Cart.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 12,
+        "column": 9,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 12,
+        "endColumn": 17,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "navigate"
+            },
+            "fix": {
+              "range": [
+                533,
+                564
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'navigate'."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React from 'react';\nimport { Link, useNavigate } from 'react-router-dom';\nimport { ShoppingBag, MessageCircle, Trash2, Plus, Minus, Loader2 } from 'lucide-react';\nimport { useCart } from '../context/CartContext';\nimport { useAuth } from '../context/AuthContext';\nimport { db } from '../firebase';\nimport { collection, addDoc, serverTimestamp } from 'firebase/firestore';\n\nexport default function Cart() {\n  const { items, updateQty, removeItem, clearCart, totalItems, totalPrice } = useCart();\n  const { user } = useAuth();\n  const navigate = useNavigate();\n  const [isProcessing, setIsProcessing] = React.useState(false);\n\n  const shipping = totalPrice > 999 ? 0 : 99;\n  const grandTotal = totalPrice + shipping;\n  const hasOutOfStock = items.some(item => item.inStock === false);\n\n  const whatsappNumber = import.meta.env.VITE_OWNER_WHATSAPP;\n\n  const buildWhatsAppMessage = () => {\n    const itemLines = items.map((item, i) =>\n      `${i + 1}. ${item.name} (${item.category})\\n   Qty: ${item.qty} × ₹${item.price} = ₹${item.price * item.qty}`\n    ).join('\\n');\n\n    const customerName = user?.displayName || 'Guest';\n\n    const message = `🛍️ *New Order — DNC Creates*\\n\\n${itemLines}\\n\\n━━━━━━━━━━━━━━━━\\n👤 *Customer:* ${customerName}\\n🧾 *Total Items:* ${totalItems}\\n💰 *Grand Total:* ₹${grandTotal}${shipping > 0 ? ` (incl. ₹${shipping} shipping)` : ' (Free Shipping)'}\\n\\nPlease confirm availability and share payment details. Thank you! 🌸`;\n\n    return encodeURIComponent(message);\n  };\n\n  const handleWhatsApp = async () => {\n    if (user) {\n      setIsProcessing(true);\n      try {\n        const orderData = {\n          userId: user.uid,\n          customerName: user.displayName || user.email || 'Customer',\n          items: items.map(item => ({\n            id: item.id,\n            name: item.name,\n            price: item.price,\n            qty: item.qty,\n            imageUrl: item.imageUrls?.[0] || item.imageUrl || item.image || null\n          })),\n          totalItems,\n          subtotal: totalPrice,\n          shipping,\n          grandTotal,\n          status: 'Pending',\n          createdAt: serverTimestamp()\n        };\n        await addDoc(collection(db, 'orders'), orderData);\n        clearCart();\n      } catch (error) {\n        console.error(\"Error saving order:\", error);\n      } finally {\n        setIsProcessing(false);\n      }\n    }\n    \n    const url = `https://wa.me/${whatsappNumber}?text=${buildWhatsAppMessage()}`;\n    window.open(url, '_blank');\n  };\n\n  if (items.length === 0) {\n    return (\n      <div className=\"min-h-[70vh] flex flex-col items-center justify-center py-24 px-4\">\n        <ShoppingBag size={80} strokeWidth={0.8} className=\"text-rose-gold opacity-20 mb-6\" />\n        <h2 className=\"font-display text-4xl text-deep-brown mb-3\">Your cart is empty</h2>\n        <p className=\"font-body text-deep-brown/60 mb-8 text-center max-w-sm\">\n          Discover our handcrafted jewellery and fill your cart with something beautiful.\n        </p>\n        <Link to=\"/shop\" className=\"btn-primary\">Browse Collection</Link>\n      </div>\n    );\n  }\n\n  return (\n    <div className=\"max-w-7xl mx-auto px-6 lg:px-8 py-12\">\n      <h1 className=\"font-display text-4xl text-deep-brown mb-2\">Shopping Cart</h1>\n      <div className=\"ornament mb-8\"></div>\n\n      {/* Guest Banner */}\n      {!user && (\n        <div className=\"mb-8 bg-champagne/60 border border-rose-gold/20 p-4 flex items-center justify-between rounded-sm\">\n          <p className=\"font-body text-deep-brown text-sm\">\n            <span className=\"font-medium\">Login to save your cart across devices</span>\n          </p>\n          <Link to=\"/login\" state={{ from: '/cart' }} className=\"btn-primary text-xs py-2 px-4\">\n            Login\n          </Link>\n        </div>\n      )}\n\n      <div className=\"flex flex-col lg:flex-row gap-10\">\n        {/* Left: Items */}\n        <div className=\"flex-1\">\n          <div className=\"divide-y divide-rose-gold/10\">\n            {items.map(item => (\n              <div key={item.id} className=\"flex gap-5 py-6 group\">\n                {/* Image */}\n                <div className=\"w-24 bg-champagne rounded-sm overflow-hidden flex-shrink-0 aspect-square\">\n                  {(item.imageUrl || item.image || (item.imageUrls && item.imageUrls[0])) && (\n                    <img src={item.imageUrl || item.image || (item.imageUrls && item.imageUrls[0])} alt={item.name} className=\"w-full h-full object-cover\" />\n                  )}\n                </div>\n\n                {/* Details */}\n                <div className=\"flex-1 min-w-0\">\n                  <div className=\"flex justify-between items-start mb-1\">\n                    <div className=\"flex items-center gap-2\">\n                      <Link to={`/shop/${item.id}`} className=\"font-display text-lg text-deep-brown hover:text-rose-gold transition-colors line-clamp-1\">\n                        {item.name}\n                      </Link>\n                      {item.inStock === false && (\n                        <span className=\"bg-red-100 text-red-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm whitespace-nowrap\">\n                          Out of Stock\n                        </span>\n                      )}\n                    </div>\n                    <button\n                      onClick={() => removeItem(item.id)}\n                      className=\"text-gray-300 hover:text-red-400 transition-colors ml-3 flex-shrink-0 opacity-0 group-hover:opacity-100\"\n                    >\n                      <Trash2 size={16} />\n                    </button>\n                  </div>\n                  <p className=\"font-body text-xs text-deep-brown/50 uppercase tracking-widest mb-3\">{item.category}</p>\n\n                  <div className=\"flex items-center justify-between\">\n                    {/* Qty Controls */}\n                    <div className=\"flex items-center border border-rose-gold/20\">\n                      <button\n                        onClick={() => updateQty(item.id, item.qty - 1)}\n                        className=\"w-8 h-8 flex items-center justify-center text-deep-brown hover:text-rose-gold hover:bg-rose-gold/5 transition-colors\"\n                      >\n                        <Minus size={14} />\n                      </button>\n                      <span className=\"w-8 text-center font-body text-sm text-deep-brown\">{item.qty}</span>\n                      <button\n                        onClick={() => updateQty(item.id, item.qty + 1)}\n                        className=\"w-8 h-8 flex items-center justify-center text-deep-brown hover:text-rose-gold hover:bg-rose-gold/5 transition-colors\"\n                      >\n                        <Plus size={14} />\n                      </button>\n                    </div>\n\n                    {/* Price */}\n                    <div className=\"text-right\">\n                      <p className=\"font-body text-deep-brown font-medium\">₹{(item.price * item.qty).toLocaleString()}</p>\n                      {item.qty > 1 && (\n                        <p className=\"text-xs text-deep-brown/40\">₹{item.price} each</p>\n                      )}\n                    </div>\n                  </div>\n                </div>\n              </div>\n            ))}\n          </div>\n\n          {/* Clear Cart */}\n          <div className=\"mt-4 pt-4 border-t border-rose-gold/10\">\n            <button\n              onClick={clearCart}\n              className=\"font-body text-xs uppercase tracking-widest text-deep-brown/40 hover:text-red-500 transition-colors\"\n            >\n              Clear Cart\n            </button>\n          </div>\n        </div>\n\n        {/* Right: Summary */}\n        <div className=\"lg:w-80\">\n          <div className=\"bg-soft-white border border-rose-gold/20 p-6 rounded-sm sticky top-28\">\n            <h3 className=\"font-display text-2xl text-deep-brown mb-5\">Order Summary</h3>\n\n            <div className=\"space-y-3 font-body text-sm mb-5\">\n              <div className=\"flex justify-between text-deep-brown/70\">\n                <span>Subtotal ({totalItems} item{totalItems > 1 ? 's' : ''})</span>\n                <span>₹{totalPrice.toLocaleString()}</span>\n              </div>\n              <div className=\"flex justify-between text-deep-brown/70\">\n                <span>Shipping</span>\n                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>\n                  {shipping === 0 ? 'Free' : `₹${shipping}`}\n                </span>\n              </div>\n              <div className=\"border-t border-rose-gold/20 pt-3 flex justify-between items-center\">\n                <span className=\"font-medium text-deep-brown\">Grand Total</span>\n                <span className=\"text-2xl text-rose-gold font-medium\">₹{grandTotal.toLocaleString()}</span>\n              </div>\n            </div>\n\n            {shipping > 0 && (\n              <p className=\"text-xs font-body text-deep-brown/50 bg-champagne/50 rounded-sm p-2 text-center mb-5\">\n                🎁 Free shipping on orders above ₹999\n              </p>\n            )}\n\n            {hasOutOfStock && (\n              <div className=\"mb-5 bg-red-50 text-red-600 border border-red-100 p-3 rounded-sm text-xs font-body text-center leading-relaxed\">\n                One or more items in your cart are out of stock. Please remove them to proceed with your order.\n              </div>\n            )}\n\n            <button\n              onClick={handleWhatsApp}\n              disabled={hasOutOfStock || items.length === 0 || isProcessing}\n              className={`w-full flex items-center justify-center gap-2 py-4 font-body uppercase tracking-widest text-sm transition-colors ${\n                hasOutOfStock || items.length === 0 || isProcessing\n                  ? 'bg-gray-300 text-gray-400 cursor-not-allowed'\n                  : 'bg-green-500 hover:bg-green-600 text-white'\n              }`}\n            >\n              {isProcessing ? <Loader2 size={18} className=\"animate-spin\" /> : <MessageCircle size={18} />}\n              {isProcessing ? 'Processing...' : 'Order via WhatsApp'}\n            </button>\n\n            <Link to=\"/shop\" className=\"block text-center mt-4 font-body text-xs text-deep-brown/50 hover:text-rose-gold transition-colors uppercase tracking-widest\">\n              Continue Shopping\n            </Link>\n          </div>\n        </div>\n      </div>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\pages\\Contact.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 4,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 4,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "motion"
+            },
+            "fix": {
+              "range": [
+                181,
+                188
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'motion'."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React, { useState, useEffect } from 'react';\nimport { useLocation } from 'react-router-dom';\nimport { Mail, Phone, MapPin, CheckCircle, Clock } from 'lucide-react';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { collection, addDoc, serverTimestamp } from 'firebase/firestore';\nimport { db } from '../../firebase';\n\nexport default function Contact() {\n  const location = useLocation();\n  const queryParams = new URLSearchParams(location.search);\n  const subjectQuery = queryParams.get('subject') || '';\n\n  const [formData, setFormData] = useState({\n    name: '',\n    email: '',\n    phone: '',\n    type: subjectQuery ? 'Custom Order' : 'General Enquiry',\n    message: subjectQuery ? `I am interested in a custom order related to: ${subjectQuery.replace('Custom Order Enquiry: ', '')}` : ''\n  });\n\n  const [isSubmitting, setIsSubmitting] = useState(false);\n  const [isSuccess, setIsSuccess] = useState(false);\n\n  useEffect(() => {\n    window.scrollTo(0, 0);\n  }, []);\n\n  const handleChange = (e) => {\n    const { name, value } = e.target;\n    setFormData(prev => ({ ...prev, [name]: value }));\n  };\n\n  const handleSubmit = async (e) => {\n    e.preventDefault();\n    setIsSubmitting(true);\n    \n    try {\n      await addDoc(collection(db, 'messages'), {\n        ...formData,\n        createdAt: serverTimestamp(),\n        status: 'Unread'\n      });\n      \n      setIsSuccess(true);\n      \n      // Fallback native email trigger (optional, user requested \"sends email to owner\")\n      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'paulanik055@gmail.com';\n      const mailtoLink = `mailto:${adminEmail}?subject=${encodeURIComponent(formData.type)}&body=${encodeURIComponent(`Name: ${formData.name}\\nEmail: ${formData.email}\\nPhone: ${formData.phone}\\n\\nMessage:\\n${formData.message}`)}`;\n      window.location.href = mailtoLink;\n\n      setFormData({\n        name: '',\n        email: '',\n        phone: '',\n        type: 'General Enquiry',\n        message: ''\n      });\n      \n      setTimeout(() => setIsSuccess(false), 5000);\n    } catch (error) {\n      console.error(\"Error sending message:\", error);\n      alert(\"There was an error sending your message. Please try again.\");\n    } finally {\n      setIsSubmitting(false);\n    }\n  };\n\n  return (\n    <div className=\"w-full\">\n      {/* Page Header */}\n      <header className=\"bg-champagne py-16 text-center border-b border-rose-gold/20\">\n        <h1 className=\"text-5xl text-deep-brown mb-4\">Get in Touch</h1>\n        <div className=\"ornament\"></div>\n        <p className=\"font-body tracking-widest uppercase text-sm text-deep-brown/70 mt-4\">\n          We'd love to hear from you\n        </p>\n      </header>\n\n      <section className=\"max-w-7xl mx-auto px-6 lg:px-8 py-24\">\n        <div className=\"grid grid-cols-1 lg:grid-cols-12 gap-16\">\n          \n          {/* Contact Information */}\n          <div className=\"lg:col-span-4 flex flex-col space-y-12\">\n            <div>\n              <h2 className=\"font-display text-3xl text-deep-brown mb-6\">Contact Information</h2>\n              <p className=\"font-body text-deep-brown/70 leading-relaxed mb-8\">\n                Whether you have a question about our pieces, need help with an order, or want to discuss a custom design, our team is here to assist you.\n              </p>\n              \n              <div className=\"space-y-6\">\n                <div className=\"flex items-start space-x-4\">\n                  <div className=\"w-10 h-10 rounded-full bg-champagne flex items-center justify-center shrink-0\">\n                    <Mail size={18} className=\"text-rose-gold\" />\n                  </div>\n                  <div>\n                    <h4 className=\"font-body uppercase tracking-wider text-xs font-medium text-deep-brown/60 mb-1\">Email</h4>\n                    <a href=\"mailto:hello@dnccreates.com\" className=\"font-body text-deep-brown hover:text-rose-gold transition-colors\">hello@dnccreates.com</a>\n                  </div>\n                </div>\n                \n                <div className=\"flex items-start space-x-4\">\n                  <div className=\"w-10 h-10 rounded-full bg-champagne flex items-center justify-center shrink-0\">\n                    <Phone size={18} className=\"text-rose-gold\" />\n                  </div>\n                  <div>\n                    <h4 className=\"font-body uppercase tracking-wider text-xs font-medium text-deep-brown/60 mb-1\">Phone / WhatsApp</h4>\n                    <a href=\"tel:+919876543210\" className=\"font-body text-deep-brown hover:text-rose-gold transition-colors\">+91 98765 43210</a>\n                  </div>\n                </div>\n\n                <div className=\"flex items-start space-x-4\">\n                  <div className=\"w-10 h-10 rounded-full bg-champagne flex items-center justify-center shrink-0\">\n                    <Clock size={18} className=\"text-rose-gold\" />\n                  </div>\n                  <div>\n                    <h4 className=\"font-body uppercase tracking-wider text-xs font-medium text-deep-brown/60 mb-1\">Working Hours</h4>\n                    <p className=\"font-body text-deep-brown\">Mon - Sat: 10AM - 6PM IST</p>\n                  </div>\n                </div>\n\n                <div className=\"flex items-start space-x-4\">\n                  <div className=\"w-10 h-10 rounded-full bg-champagne flex items-center justify-center shrink-0\">\n                    <MapPin size={18} className=\"text-rose-gold\" />\n                  </div>\n                  <div>\n                    <h4 className=\"font-body uppercase tracking-wider text-xs font-medium text-deep-brown/60 mb-1\">Studio Location</h4>\n                    <p className=\"font-body text-deep-brown\">Mumbai, India<br/>(Studio visits by appointment only)</p>\n                  </div>\n                </div>\n              </div>\n            </div>\n          </div>\n\n          {/* Contact Form */}\n          <div className=\"lg:col-span-8\">\n            <div className=\"bg-white p-8 md:p-12 border border-rose-gold/20 shadow-sm relative overflow-hidden\">\n              \n              <AnimatePresence>\n                {isSuccess && (\n                  <motion.div \n                    initial={{ opacity: 0, y: 10 }}\n                    animate={{ opacity: 1, y: 0 }}\n                    exit={{ opacity: 0, scale: 0.95 }}\n                    className=\"absolute inset-0 z-20 bg-white flex flex-col items-center justify-center text-center p-8\"\n                  >\n                    <motion.div\n                      initial={{ scale: 0 }}\n                      animate={{ scale: 1 }}\n                      transition={{ type: \"spring\", stiffness: 200, damping: 20 }}\n                    >\n                      <CheckCircle size={64} className=\"text-green-500 mb-6\" strokeWidth={1.5} />\n                    </motion.div>\n                    <h3 className=\"font-display text-3xl text-deep-brown mb-2\">Message Sent!</h3>\n                    <p className=\"font-body text-deep-brown/70 max-w-sm\">\n                      Thank you for reaching out. We will get back to you within 24-48 business hours.\n                    </p>\n                  </motion.div>\n                )}\n              </AnimatePresence>\n\n              <h2 className=\"font-display text-3xl text-deep-brown mb-8\">Send us a Message</h2>\n              \n              <form onSubmit={handleSubmit} className=\"space-y-6\">\n                <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n                  <div>\n                    <label htmlFor=\"name\" className=\"block font-body text-xs uppercase tracking-wider text-deep-brown/70 mb-2\">Full Name *</label>\n                    <input \n                      type=\"text\" \n                      id=\"name\"\n                      name=\"name\"\n                      required\n                      value={formData.name}\n                      onChange={handleChange}\n                      className=\"w-full bg-soft-white border border-rose-gold/30 px-4 py-3 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors\"\n                    />\n                  </div>\n                  <div>\n                    <label htmlFor=\"email\" className=\"block font-body text-xs uppercase tracking-wider text-deep-brown/70 mb-2\">Email Address *</label>\n                    <input \n                      type=\"email\" \n                      id=\"email\"\n                      name=\"email\"\n                      required\n                      value={formData.email}\n                      onChange={handleChange}\n                      className=\"w-full bg-soft-white border border-rose-gold/30 px-4 py-3 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors\"\n                    />\n                  </div>\n                </div>\n\n                <div className=\"grid grid-cols-1 md:grid-cols-2 gap-6\">\n                  <div>\n                    <label htmlFor=\"phone\" className=\"block font-body text-xs uppercase tracking-wider text-deep-brown/70 mb-2\">Phone Number</label>\n                    <input \n                      type=\"tel\" \n                      id=\"phone\"\n                      name=\"phone\"\n                      value={formData.phone}\n                      onChange={handleChange}\n                      className=\"w-full bg-soft-white border border-rose-gold/30 px-4 py-3 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors\"\n                    />\n                  </div>\n                  <div>\n                    <label htmlFor=\"type\" className=\"block font-body text-xs uppercase tracking-wider text-deep-brown/70 mb-2\">Enquiry Type *</label>\n                    <select \n                      id=\"type\"\n                      name=\"type\"\n                      required\n                      value={formData.type}\n                      onChange={handleChange}\n                      className=\"w-full bg-soft-white border border-rose-gold/30 px-4 py-3 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors appearance-none\"\n                    >\n                      <option>General Enquiry</option>\n                      <option>Custom Order</option>\n                      <option>Order Status</option>\n                      <option>Return/Exchange</option>\n                      <option>Other</option>\n                    </select>\n                  </div>\n                </div>\n\n                <div>\n                  <label htmlFor=\"message\" className=\"block font-body text-xs uppercase tracking-wider text-deep-brown/70 mb-2\">Your Message *</label>\n                  <textarea \n                    id=\"message\"\n                    name=\"message\"\n                    rows=\"5\"\n                    required\n                    value={formData.message}\n                    onChange={handleChange}\n                    className=\"w-full bg-soft-white border border-rose-gold/30 px-4 py-3 font-body text-deep-brown focus:outline-none focus:border-rose-gold transition-colors resize-y\"\n                  ></textarea>\n                </div>\n\n                <div className=\"pt-2\">\n                  <button \n                    type=\"submit\" \n                    disabled={isSubmitting}\n                    className={`btn-primary w-full md:w-auto ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}\n                  >\n                    {isSubmitting ? 'Sending...' : 'Send Message'}\n                  </button>\n                </div>\n              </form>\n\n            </div>\n          </div>\n\n        </div>\n      </section>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "C:\\Users\\paula\\Desktop\\Ecom\\dnc-creates\\src\\pages\\Home.jsx",
+    "messages": [
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 3,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 3,
+        "endColumn": 16,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "motion"
+            },
+            "fix": {
+              "range": [
+                77,
+                84
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'motion'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'useScroll' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 3,
+        "column": 18,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 3,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "useScroll"
+            },
+            "fix": {
+              "range": [
+                83,
+                94
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'useScroll'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'useTransform' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.",
+        "line": 3,
+        "column": 29,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 3,
+        "endColumn": 41,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "useTransform"
+            },
+            "fix": {
+              "range": [
+                94,
+                108
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'useTransform'."
+          }
+        ]
+      },
+      {
+        "ruleId": "no-unused-vars",
+        "severity": 2,
+        "message": "'i' is defined but never used.",
+        "line": 97,
+        "column": 42,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 97,
+        "endColumn": 43,
+        "suggestions": [
+          {
+            "messageId": "removeVar",
+            "data": {
+              "varName": "i"
+            },
+            "fix": {
+              "range": [
+                4083,
+                4086
+              ],
+              "text": ""
+            },
+            "desc": "Remove unused variable 'i'."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 4,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import React from 'react';\nimport { Link } from 'react-router-dom';\nimport { motion, useScroll, useTransform } from 'framer-motion';\nimport { ArrowDown, Sparkles, HeartHandshake, ShieldCheck, Diamond } from 'lucide-react';\nimport { CATEGORIES } from '../data/products';\nimport ProductCard from '../components/ui/ProductCard';\nimport ProductSkeleton from '../components/ui/ProductSkeleton';\nimport { useProducts } from '../hooks/useProducts';\n\nexport default function Home() {\n  const { featuredProducts, loading } = useProducts();\n\n  return (\n    <div className=\"w-full\">\n      {/* Hero Section */}\n      <section className=\"relative h-screen min-h-[600px] bg-deep-brown flex items-center justify-center overflow-hidden -mt-24 pt-24\">\n        {/* Animated Background Sparkles */}\n        <div className=\"absolute inset-0 z-0 opacity-20 pointer-events-none\">\n          <motion.div \n            animate={{ opacity: [0.2, 0.8, 0.2] }} \n            transition={{ duration: 4, repeat: Infinity }}\n            className=\"absolute top-1/4 left-1/4\"\n          >\n            <Sparkles className=\"text-champagne w-8 h-8\" />\n          </motion.div>\n          <motion.div \n            animate={{ opacity: [0.1, 0.5, 0.1] }} \n            transition={{ duration: 5, repeat: Infinity, delay: 1 }}\n            className=\"absolute top-1/3 right-1/4\"\n          >\n            <Sparkles className=\"text-champagne w-6 h-6\" />\n          </motion.div>\n          <motion.div \n            animate={{ opacity: [0.2, 0.6, 0.2] }} \n            transition={{ duration: 3, repeat: Infinity, delay: 2 }}\n            className=\"absolute bottom-1/4 right-1/3\"\n          >\n            <Sparkles className=\"text-champagne w-10 h-10\" />\n          </motion.div>\n        </div>\n\n        <div className=\"relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center\">\n          <motion.img \n            initial={{ opacity: 0, y: 20 }}\n            animate={{ opacity: 1, y: 0 }}\n            transition={{ duration: 0.8 }}\n            src=\"/src/assets/images/logo2.png\" \n            alt=\"DNC Monogram\" \n            className=\"w-32 md:w-40 mb-6 drop-shadow-2xl\"\n          />\n          <motion.p \n            initial={{ opacity: 0 }}\n            animate={{ opacity: 1 }}\n            transition={{ duration: 0.8, delay: 0.3 }}\n            className=\"font-accent text-4xl md:text-5xl text-rose-gold-light mb-4\"\n          >\n            Crafted with love\n          </motion.p>\n          <motion.h1 \n            initial={{ opacity: 0, scale: 0.95 }}\n            animate={{ opacity: 1, scale: 1 }}\n            transition={{ duration: 0.8, delay: 0.5 }}\n            className=\"font-display text-5xl md:text-7xl font-light mb-10 text-shimmer leading-tight\"\n          >\n            Handcrafted Elegance for the Modern Soul\n          </motion.h1>\n          \n          <motion.div \n            initial={{ opacity: 0, y: 20 }}\n            animate={{ opacity: 1, y: 0 }}\n            transition={{ duration: 0.8, delay: 0.7 }}\n            className=\"flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6\"\n          >\n            <Link to=\"/shop\" className=\"btn-primary\">\n              Shop Collection\n            </Link>\n            <Link to=\"/about\" className=\"btn-outline border-champagne text-champagne hover:bg-white/20 hover:text-white hover:border-transparent\">\n              Our Story\n            </Link>\n          </motion.div>\n        </div>\n\n        {/* Scroll Indicator */}\n        <motion.div \n          initial={{ opacity: 0 }}\n          animate={{ opacity: 1 }}\n          transition={{ duration: 1, delay: 1.5 }}\n          className=\"absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce text-champagne/50\"\n        >\n          <ArrowDown size={24} strokeWidth={1} />\n        </motion.div>\n      </section>\n\n      {/* Categories Strip */}\n      <section className=\"bg-champagne py-12 border-b border-rose-gold/20\">\n        <div className=\"max-w-7xl mx-auto px-6 overflow-x-auto scrolly flex items-center justify-center space-x-12 whitespace-nowrap\">\n          {CATEGORIES.slice(1).map((cat, i) => (\n            <Link \n              key={cat} \n              to={`/shop?category=${cat}`} \n              className=\"font-display text-2xl text-deep-brown hover:text-rose-gold transition-colors tracking-widest uppercase flex items-center group\"\n            >\n              <span className=\"w-1.5 h-1.5 rounded-full bg-rose-gold mr-3 opacity-0 group-hover:opacity-100 transition-opacity\" />\n              {cat}\n            </Link>\n          ))}\n        </div>\n      </section>\n\n      {/* Featured Products */}\n      <section className=\"py-24 max-w-7xl mx-auto px-6 lg:px-8\">\n        <div className=\"text-center mb-16\">\n          <h2 className=\"text-4xl md:text-5xl text-deep-brown mb-4\">Curated Favorites</h2>\n          <div className=\"ornament\"></div>\n          <p className=\"font-body text-deep-brown/70 max-w-xl mx-auto\">\n            Discover our most loved pieces, delicately handcrafted to bring a touch of timeless beauty to your collection.\n          </p>\n        </div>\n        \n        {loading ? (\n          <div className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8\">\n            {Array.from({ length: 8 }).map((_, i) => (\n              <ProductSkeleton key={`skeleton-${i}`} />\n            ))}\n          </div>\n        ) : (\n          <div className=\"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8\">\n            {featuredProducts.map(product => (\n              <ProductCard key={product.id} product={product} />\n            ))}\n          </div>\n        )}\n        \n        <div className=\"mt-16 text-center\">\n          <Link to=\"/shop\" className=\"btn-outline\">\n            View All Pieces\n          </Link>\n        </div>\n      </section>\n\n      {/* Brand Promise */}\n      <section className=\"bg-soft-white py-24 border-y border-rose-gold/20\">\n        <div className=\"max-w-7xl mx-auto px-6 lg:px-8\">\n          <div className=\"grid grid-cols-1 md:grid-cols-3 gap-12 text-center\">\n            <div className=\"flex flex-col items-center\">\n              <div className=\"w-16 h-16 rounded-full bg-rose-gold/10 flex items-center justify-center text-rose-gold mb-6\">\n                <HeartHandshake size={32} strokeWidth={1.5} />\n              </div>\n              <h3 className=\"text-2xl mb-3 text-deep-brown\">Handcrafted with Love</h3>\n              <p className=\"font-body text-deep-brown/70 text-sm leading-relaxed\">\n                Every piece is meticulously assembled by hand, ensuring uniqueness and imperfect perfection.\n              </p>\n            </div>\n            <div className=\"flex flex-col items-center\">\n              <div className=\"w-16 h-16 rounded-full bg-rose-gold/10 flex items-center justify-center text-rose-gold mb-6\">\n                <Diamond size={32} strokeWidth={1.5} />\n              </div>\n              <h3 className=\"text-2xl mb-3 text-deep-brown\">Premium Materials</h3>\n              <p className=\"font-body text-deep-brown/70 text-sm leading-relaxed\">\n                We source only the finest metals and ethically gathered stones that stand the test of time.\n              </p>\n            </div>\n            <div className=\"flex flex-col items-center\">\n              <div className=\"w-16 h-16 rounded-full bg-rose-gold/10 flex items-center justify-center text-rose-gold mb-6\">\n                <ShieldCheck size={32} strokeWidth={1.5} />\n              </div>\n              <h3 className=\"text-2xl mb-3 text-deep-brown\">Made to Order</h3>\n              <p className=\"font-body text-deep-brown/70 text-sm leading-relaxed\">\n                Customizations available to make your jewellery as unique as your own story.\n              </p>\n            </div>\n          </div>\n        </div>\n      </section>\n\n      {/* CTA Banner */}\n      <section className=\"py-24 bg-deep-brown text-center px-4 relative overflow-hidden\">\n        <div className=\"absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4e0aebaa02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center mix-blend-overlay\" />\n        <div className=\"relative z-10 max-w-2xl mx-auto\">\n          <h2 className=\"text-4xl md:text-5xl text-champagne mb-6 leading-tight\">\n            Have a Dream Design?\n          </h2>\n          <p className=\"font-body text-champagne/80 mb-10 leading-relaxed text-lg\">\n            Let's bring your vision to life. Work directly with us to design a custom piece that speaks to your heart.\n          </p>\n          <Link to=\"/contact\" className=\"btn-primary\">\n            Request Custom Order\n          </Link>\n        </div>\n      </section>\n    </div>\n  );\n}\n",
+    "usedDeprecatedRules": []
+  }
+]

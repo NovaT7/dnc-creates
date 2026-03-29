@@ -1,197 +1,228 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Trash2, Plus, Minus, MessageCircle } from 'lucide-react';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ShoppingBag, MessageCircle, Trash2, Plus, Minus, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-
-const OWNER_WHATSAPP = '919365682130'; 
+import { useAuth } from '../context/AuthContext';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 export default function Cart() {
-  const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();
+  const { items, updateQty, removeItem, clearCart, totalItems, totalPrice } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  const shipping = totalPrice > 999 ? 0 : 99;
+  const grandTotal = totalPrice + shipping;
+  const hasOutOfStock = items.some(item => item.inStock === false);
 
-  const shippingCost = totalPrice > 999 ? 0 : 99;
-  const grandTotal = totalPrice + shippingCost;
+  const whatsappNumber = import.meta.env.VITE_OWNER_WHATSAPP;
 
-  const handleWhatsAppOrder = () => {
-    let message = `🛍️ *New Order — DNC Creates*\n\n`;
-    
-    items.forEach((item, index) => {
-      const subtotal = item.qty * item.price;
-      message += `${index + 1}. *${item.name}* (${item.category})\n`;
-      message += `   Qty: ${item.qty} × ₹${item.price} = ₹${subtotal}\n\n`;
-    });
-    
-    message += `━━━━━━━━━━━━━━━━\n`;
-    message += `🧾 *Total Items:* ${totalItems}\n`;
-    message += `💰 *Subtotal:* ₹${totalPrice}\n`;
-    message += `🚚 *Shipping:* ${shippingCost === 0 ? 'Free' : '₹' + shippingCost}\n`;
-    message += `💳 *Grand Total: ₹${grandTotal}*\n\n`;
-    
-    if (shippingCost === 0) {
-      message += `_(Includes Free Shipping for orders above ₹999)_\n\n`;
+  const buildWhatsAppMessage = () => {
+    const itemLines = items.map((item, i) =>
+      `${i + 1}. ${item.name} (${item.category})\n   Qty: ${item.qty} × ₹${item.price} = ₹${item.price * item.qty}`
+    ).join('\n');
+
+    const customerName = user?.displayName || 'Guest';
+
+    const message = `🛍️ *New Order — DNC Creates*\n\n${itemLines}\n\n━━━━━━━━━━━━━━━━\n👤 *Customer:* ${customerName}\n🧾 *Total Items:* ${totalItems}\n💰 *Grand Total:* ₹${grandTotal}${shipping > 0 ? ` (incl. ₹${shipping} shipping)` : ' (Free Shipping)'}\n\nPlease confirm availability and share payment details. Thank you! 🌸`;
+
+    return encodeURIComponent(message);
+  };
+
+  const handleWhatsApp = async () => {
+    if (user) {
+      setIsProcessing(true);
+      try {
+        const orderData = {
+          userId: user.uid,
+          customerName: user.displayName || user.email || 'Customer',
+          items: items.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+            imageUrl: item.imageUrls?.[0] || item.imageUrl || item.image || null
+          })),
+          totalItems,
+          subtotal: totalPrice,
+          shipping,
+          grandTotal,
+          status: 'Pending',
+          createdAt: serverTimestamp()
+        };
+        await addDoc(collection(db, 'orders'), orderData);
+        clearCart();
+      } catch (error) {
+        console.error("Error saving order:", error);
+      } finally {
+        setIsProcessing(false);
+      }
     }
     
-    message += `"Please confirm availability and share payment details. Thank you! 🌸"`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${OWNER_WHATSAPP}?text=${encodedMessage}`;
-    
-    window.open(whatsappUrl, '_blank');
+    const url = `https://wa.me/${whatsappNumber}?text=${buildWhatsAppMessage()}`;
+    window.open(url, '_blank');
   };
 
   if (items.length === 0) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-24 h-24 bg-champagne rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag size={40} className="text-rose-gold" strokeWidth={1} />
-        </div>
-        <h2 className="font-display text-4xl text-deep-brown mb-4">Your Cart is Empty</h2>
-        <p className="font-body text-deep-brown/70 mb-8 max-w-md">
-          Looks like you haven't added any beautiful pieces to your collection yet.
+      <div className="min-h-[70vh] flex flex-col items-center justify-center py-24 px-4">
+        <ShoppingBag size={80} strokeWidth={0.8} className="text-rose-gold opacity-20 mb-6" />
+        <h2 className="font-display text-4xl text-deep-brown mb-3">Your cart is empty</h2>
+        <p className="font-body text-deep-brown/60 mb-8 text-center max-w-sm">
+          Discover our handcrafted jewellery and fill your cart with something beautiful.
         </p>
-        <Link to="/shop" className="btn-primary">
-          Browse Collection
-        </Link>
+        <Link to="/shop" className="btn-primary">Browse Collection</Link>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16">
-      <h1 className="font-display text-4xl lg:text-5xl text-deep-brown mb-12">Your Cart</h1>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-        {/* Left: Cart Items */}
-        <div className="lg:col-span-8 flex flex-col">
-          <div className="border border-rose-gold/20 rounded-sm">
-            
-            {/* Table Header (Desktop) */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-champagne/30 border-b border-rose-gold/20 text-xs font-body uppercase tracking-wider text-deep-brown/70">
-              <div className="col-span-6">Product</div>
-              <div className="col-span-2 text-center">Price</div>
-              <div className="col-span-2 text-center">Quantity</div>
-              <div className="col-span-2 text-right">Total</div>
-            </div>
+    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12">
+      <h1 className="font-display text-4xl text-deep-brown mb-2">Shopping Cart</h1>
+      <div className="ornament mb-8"></div>
 
-            {/* Item Rows */}
-            <div className="divide-y divide-rose-gold/20">
-              {items.map(item => (
-                <div key={item.id} className="p-6 flex flex-col md:grid md:grid-cols-12 md:items-center gap-4 group">
-                  
-                  {/* Product Info */}
-                  <div className="col-span-6 flex items-center space-x-4">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-20 h-24 object-cover bg-champagne"
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-rose-gold uppercase tracking-wider mb-1 font-body">
-                        {item.category}
-                      </span>
-                      <Link to={`/shop/${item.id}`} className="font-display text-xl text-deep-brown hover:text-rose-gold transition-colors block leading-tight mb-1">
+      {/* Guest Banner */}
+      {!user && (
+        <div className="mb-8 bg-champagne/60 border border-rose-gold/20 p-4 flex items-center justify-between rounded-sm">
+          <p className="font-body text-deep-brown text-sm">
+            <span className="font-medium">Login to save your cart across devices</span>
+          </p>
+          <Link to="/login" state={{ from: '/cart' }} className="btn-primary text-xs py-2 px-4">
+            Login
+          </Link>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-10">
+        {/* Left: Items */}
+        <div className="flex-1">
+          <div className="divide-y divide-rose-gold/10">
+            {items.map(item => (
+              <div key={item.id} className="flex gap-5 py-6 group">
+                {/* Image */}
+                <div className="w-24 bg-champagne rounded-sm overflow-hidden flex-shrink-0 aspect-square">
+                  {(item.imageUrl || item.image || (item.imageUrls && item.imageUrls[0])) && (
+                    <img src={item.imageUrl || item.image || (item.imageUrls && item.imageUrls[0])} alt={item.name} className="w-full h-full object-cover" />
+                  )}
+                </div>
+
+                {/* Details */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="flex items-center gap-2">
+                      <Link to={`/shop/${item.id}`} className="font-display text-lg text-deep-brown hover:text-rose-gold transition-colors line-clamp-1">
                         {item.name}
                       </Link>
-                      <button 
-                        onClick={() => removeItem(item.id)}
-                        className="text-xs text-rose-gold-dark/60 hover:text-rose-gold-dark transition-colors inline-flex items-center w-fit font-body uppercase tracking-wider mt-2 group-hover:opacity-100 md:opacity-0"
-                      >
-                        <Trash2 size={12} className="mr-1" /> Remove
-                      </button>
+                      {item.inStock === false && (
+                        <span className="bg-red-100 text-red-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded-sm whitespace-nowrap">
+                          Out of Stock
+                        </span>
+                      )}
                     </div>
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-gray-300 hover:text-red-400 transition-colors ml-3 flex-shrink-0 opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
+                  <p className="font-body text-xs text-deep-brown/50 uppercase tracking-widest mb-3">{item.category}</p>
 
-                  {/* Price (Mobile & Desktop) */}
-                  <div className="col-span-2 text-left md:text-center mt-2 md:mt-0 font-body text-deep-brown font-medium">
-                    <span className="md:hidden text-xs text-deep-brown/60 tracking-wider mr-2 uppercase">Price:</span>
-                    ₹{item.price}
-                  </div>
-
-                  {/* Quantity */}
-                  <div className="col-span-2 flex justify-start md:justify-center items-center mt-2 md:mt-0">
-                    <div className="flex items-center border border-rose-gold/30">
-                      <button 
+                  <div className="flex items-center justify-between">
+                    {/* Qty Controls */}
+                    <div className="flex items-center border border-rose-gold/20">
+                      <button
                         onClick={() => updateQty(item.id, item.qty - 1)}
-                        className="px-3 py-1 text-deep-brown/60 hover:text-rose-gold transition-colors focus:outline-none"
+                        className="w-8 h-8 flex items-center justify-center text-deep-brown hover:text-rose-gold hover:bg-rose-gold/5 transition-colors"
                       >
                         <Minus size={14} />
                       </button>
-                      <span className="font-body text-sm w-8 text-center">{item.qty}</span>
-                      <button 
+                      <span className="w-8 text-center font-body text-sm text-deep-brown">{item.qty}</span>
+                      <button
                         onClick={() => updateQty(item.id, item.qty + 1)}
-                        className="px-3 py-1 text-deep-brown/60 hover:text-rose-gold transition-colors focus:outline-none"
+                        className="w-8 h-8 flex items-center justify-center text-deep-brown hover:text-rose-gold hover:bg-rose-gold/5 transition-colors"
                       >
                         <Plus size={14} />
                       </button>
                     </div>
-                  </div>
 
-                  {/* Subtotal */}
-                  <div className="col-span-2 text-left md:text-right mt-2 md:mt-0 font-body text-lg text-deep-brown font-medium">
-                    <span className="md:hidden text-xs text-deep-brown/60 tracking-wider mr-2 uppercase">Subtotal:</span>
-                    ₹{item.price * item.qty}
+                    {/* Price */}
+                    <div className="text-right">
+                      <p className="font-body text-deep-brown font-medium">₹{(item.price * item.qty).toLocaleString()}</p>
+                      {item.qty > 1 && (
+                        <p className="text-xs text-deep-brown/40">₹{item.price} each</p>
+                      )}
+                    </div>
                   </div>
-
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
-          <div className="mt-6 flex justify-between items-center">
-            <Link to="/shop" className="text-sm font-body uppercase tracking-wider text-rose-gold hover:text-deep-brown transition-colors">
-              Continue Shopping
-            </Link>
-            <button 
+          {/* Clear Cart */}
+          <div className="mt-4 pt-4 border-t border-rose-gold/10">
+            <button
               onClick={clearCart}
-              className="text-sm font-body uppercase tracking-wider text-deep-brown/60 hover:text-rose-gold transition-colors"
+              className="font-body text-xs uppercase tracking-widest text-deep-brown/40 hover:text-red-500 transition-colors"
             >
               Clear Cart
             </button>
           </div>
         </div>
 
-        {/* Right: Order Summary */}
-        <div className="lg:col-span-4">
-          <div className="bg-champagne/40 p-8 border border-rose-gold/20">
-            <h3 className="font-display text-2xl text-deep-brown mb-6">Order Summary</h3>
-            
-            <div className="space-y-4 font-body text-sm mb-6 pb-6 border-b border-rose-gold/20">
-              <div className="flex justify-between text-deep-brown/80">
-                <span>Items ({totalItems})</span>
-                <span>₹{totalPrice}</span>
+        {/* Right: Summary */}
+        <div className="lg:w-80">
+          <div className="bg-soft-white border border-rose-gold/20 p-6 rounded-sm sticky top-28">
+            <h3 className="font-display text-2xl text-deep-brown mb-5">Order Summary</h3>
+
+            <div className="space-y-3 font-body text-sm mb-5">
+              <div className="flex justify-between text-deep-brown/70">
+                <span>Subtotal ({totalItems} item{totalItems > 1 ? 's' : ''})</span>
+                <span>₹{totalPrice.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-deep-brown/80">
+              <div className="flex justify-between text-deep-brown/70">
                 <span>Shipping</span>
-                <span>{shippingCost === 0 ? 'Free' : '₹' + shippingCost}</span>
+                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
+                  {shipping === 0 ? 'Free' : `₹${shipping}`}
+                </span>
               </div>
-              {shippingCost > 0 && (
-                <p className="text-[10px] text-rose-gold-dark text-right">
-                  Free shipping on orders above ₹999
-                </p>
-              )}
+              <div className="border-t border-rose-gold/20 pt-3 flex justify-between items-center">
+                <span className="font-medium text-deep-brown">Grand Total</span>
+                <span className="text-2xl text-rose-gold font-medium">₹{grandTotal.toLocaleString()}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center font-display text-3xl text-deep-brown mb-8">
-              <span>Total</span>
-              <span>₹{grandTotal}</span>
-            </div>
+            {shipping > 0 && (
+              <p className="text-xs font-body text-deep-brown/50 bg-champagne/50 rounded-sm p-2 text-center mb-5">
+                🎁 Free shipping on orders above ₹999
+              </p>
+            )}
 
-            <button 
-              onClick={handleWhatsAppOrder}
-              className="w-full flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-body uppercase tracking-widest text-sm py-4 transition-colors font-medium shadow-md hover:shadow-lg"
+            {hasOutOfStock && (
+              <div className="mb-5 bg-red-50 text-red-600 border border-red-100 p-3 rounded-sm text-xs font-body text-center leading-relaxed">
+                One or more items in your cart are out of stock. Please remove them to proceed with your order.
+              </div>
+            )}
+
+            <button
+              onClick={handleWhatsApp}
+              disabled={hasOutOfStock || items.length === 0 || isProcessing}
+              className={`w-full flex items-center justify-center gap-2 py-4 font-body uppercase tracking-widest text-sm transition-colors ${
+                hasOutOfStock || items.length === 0 || isProcessing
+                  ? 'bg-gray-300 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-500 hover:bg-green-600 text-white'
+              }`}
             >
-              <MessageCircle size={18} className="mr-2" />
-              Order via WhatsApp
+              {isProcessing ? <Loader2 size={18} className="animate-spin" /> : <MessageCircle size={18} />}
+              {isProcessing ? 'Processing...' : 'Order via WhatsApp'}
             </button>
-            <p className="text-xs text-center text-deep-brown/50 mt-4 leading-relaxed font-body">
-              Clicking this will generate a pre-filled WhatsApp message outlining your order.
-            </p>
+
+            <Link to="/shop" className="block text-center mt-4 font-body text-xs text-deep-brown/50 hover:text-rose-gold transition-colors uppercase tracking-widest">
+              Continue Shopping
+            </Link>
           </div>
         </div>
-
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Mail, Phone, MapPin, CheckCircle, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function Contact() {
   const location = useLocation();
@@ -28,16 +30,24 @@ export default function Contact() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // TODO: Connect to EmailJS or Formspree here
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await addDoc(collection(db, 'messages'), {
+        ...formData,
+        createdAt: serverTimestamp(),
+        status: 'Unread'
+      });
+      
       setIsSuccess(true);
+      
+      // Fallback native email trigger (optional, user requested "sends email to owner")
+      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'paulanik055@gmail.com';
+      const mailtoLink = `mailto:${adminEmail}?subject=${encodeURIComponent(formData.type)}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`)}`;
+      window.location.href = mailtoLink;
+
       setFormData({
         name: '',
         email: '',
@@ -47,7 +57,12 @@ export default function Contact() {
       });
       
       setTimeout(() => setIsSuccess(false), 5000);
-    }, 1500);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert("There was an error sending your message. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
