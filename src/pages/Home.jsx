@@ -8,7 +8,7 @@ import ProductSkeleton from '../components/ui/ProductSkeleton';
 import { useProducts } from '../hooks/useProducts';
 import { optimizeImage } from '../utils/imgUtils';
 
-import logo2 from '../assets/images/logo2.png';
+import logo2 from '../assets/images/logo2.webp';
 
 export default function Home() {
   const { featuredProducts, loading } = useProducts();
@@ -20,27 +20,32 @@ export default function Home() {
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
           {/* Main Hero Sparkle - always rendered */}
           <motion.div 
+            style={{ willChange: 'opacity' }}
             animate={{ opacity: [0.2, 0.8, 0.2] }} 
             transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
             className="absolute top-1/4 left-1/4"
           >
             <Sparkles className="text-champagne w-8 h-8" />
           </motion.div>
-          {/* Secondary Sparkles - hidden on small mobile to save CPU */}
-          <motion.div 
-            animate={{ opacity: [0.1, 0.5, 0.1] }} 
-            transition={{ duration: 5, repeat: Infinity, delay: 1, ease: "linear" }}
-            className="absolute top-1/3 right-1/4 hidden sm:block"
-          >
-            <Sparkles className="text-champagne w-6 h-6" />
-          </motion.div>
-          <motion.div 
-            animate={{ opacity: [0.2, 0.6, 0.2] }} 
-            transition={{ duration: 3, repeat: Infinity, delay: 2, ease: "linear" }}
-            className="absolute bottom-1/4 right-1/3 hidden md:block"
-          >
-            <Sparkles className="text-champagne w-10 h-10" />
-          </motion.div>
+          {/* Secondary Sparkles - hidden on mobile to save CPU entirely */}
+          <div className="hidden sm:block absolute inset-0">
+            <motion.div 
+              style={{ willChange: 'opacity' }}
+              animate={{ opacity: [0.1, 0.5, 0.1] }} 
+              transition={{ duration: 5, repeat: Infinity, delay: 1, ease: "linear" }}
+              className="absolute top-1/3 right-1/4"
+            >
+              <Sparkles className="text-champagne w-6 h-6" />
+            </motion.div>
+            <motion.div 
+              style={{ willChange: 'opacity' }}
+              animate={{ opacity: [0.2, 0.6, 0.2] }} 
+              transition={{ duration: 3, repeat: Infinity, delay: 2, ease: "linear" }}
+              className="absolute bottom-1/4 right-1/3 hidden md:block"
+            >
+              <Sparkles className="text-champagne w-10 h-10" />
+            </motion.div>
+          </div>
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto flex flex-col items-center">
@@ -50,16 +55,16 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             src={logo2} 
             alt="DNC Monogram" 
-            fetchpriority="high"
-            width="160"
-            height="160"
-            className="w-32 md:w-40 mb-6 drop-shadow-2xl"
+            fetchPriority="high"
+            width="120"
+            height="120"
+            className="w-24 md:w-40 mb-6 drop-shadow-2xl"
           />
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="font-accent text-4xl md:text-5xl text-rose-gold-light mb-4"
+            className="font-accent text-3xl md:text-5xl text-rose-gold-light mb-4"
           >
             Crafted with love
           </motion.p>
@@ -67,7 +72,7 @@ export default function Home() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className="font-display text-5xl md:text-7xl font-light mb-10 text-shimmer leading-tight"
+            className="font-display text-4xl md:text-7xl font-light mb-10 text-shimmer leading-tight"
           >
             Handcrafted Elegance for the Modern Soul
           </motion.h1>
@@ -182,7 +187,13 @@ export default function Home() {
 
       {/* CTA Banner */}
       <section className="py-24 bg-deep-brown text-center px-4 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4e0aebaa02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=60')] bg-cover bg-center mix-blend-overlay" />
+        <img 
+          src="https://images.unsplash.com/photo-1599643478514-4a4e0aebaa02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=60&fm=webp"
+          alt="" 
+          className="absolute inset-0 z-0 opacity-10 w-full h-full object-cover mix-blend-overlay pointer-events-none"
+          loading="lazy"
+          aria-hidden="true"
+        />
         <div className="relative z-10 max-w-2xl mx-auto">
           <h2 className="text-4xl md:text-5xl text-champagne mb-6 leading-tight">
             Have a Dream Design?

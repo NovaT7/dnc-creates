@@ -36,7 +36,7 @@ function ImageGallery({ product }) {
           width="1000"
           height="1000"
           loading="eager" 
-          fetchpriority="high"
+          fetchPriority="high"
           className="w-full h-full object-cover transition-all duration-300"
         />
       </div>

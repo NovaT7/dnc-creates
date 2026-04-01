@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import logo1 from '../assets/images/logo1.webp';
 
 export default function About() {
   return (
