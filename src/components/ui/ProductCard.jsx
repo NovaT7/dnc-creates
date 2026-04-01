@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 
+import { optimizeImage } from '../../utils/imgUtils';
+
 export default function ProductCard({ product }) {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const isWished = isInWishlist(product.id);
@@ -13,6 +15,9 @@ export default function ProductCard({ product }) {
     e.stopPropagation();
     toggleWishlist(product.id);
   };
+
+  const imageUrl = product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0]);
+  const optimizedUrl = optimizeImage(imageUrl, { width: 600, quality: 70 });
 
   return (
     <motion.div 
@@ -40,9 +45,9 @@ export default function ProductCard({ product }) {
         </button>
         
         {/* Image Box */}
-        <div className="aspect-square w-full overflow-hidden bg-champagne mb-4 relative">
+        <div className="aspect-square w-full overflow-hidden bg-champagne mb-4 relative" style={{ minHeight: '280px' }}>
           <img 
-            src={`${product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0])}${((product.imageUrl || '').includes('unsplash') || (product.image || '').includes('unsplash')) ? '&w=600&q=80' : ''}`} 
+            src={optimizedUrl} 
             alt={product.name} 
             loading="lazy"
             width="600"

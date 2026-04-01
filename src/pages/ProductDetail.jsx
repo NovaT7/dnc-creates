@@ -12,6 +12,8 @@ function getImageUrls(product) {
   return single ? [single] : [];
 }
 
+import { optimizeImage } from '../utils/imgUtils';
+
 function ImageGallery({ product }) {
   const images = getImageUrls(product);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -29,10 +31,10 @@ function ImageGallery({ product }) {
       {/* Main image */}
       <div className="bg-champagne rounded-sm overflow-hidden aspect-square w-full">
         <img
-          src={images[activeIdx]}
+          src={optimizeImage(images[activeIdx], { width: 1000, quality: 80 })}
           alt={product.name}
-          width="800"
-          height="800"
+          width="1000"
+          height="1000"
           loading="eager" 
           fetchpriority="high"
           className="w-full h-full object-cover transition-all duration-300"
@@ -49,7 +51,14 @@ function ImageGallery({ product }) {
                 i === activeIdx ? 'border-rose-gold' : 'border-transparent opacity-60 hover:opacity-100'
               }`}
             >
-              <img src={url} alt={`View ${i + 1}`} className="w-full h-full object-cover" />
+              <img 
+                src={optimizeImage(url, { width: 200, quality: 60 })} 
+                alt={`View ${i + 1}`} 
+                className="w-full h-full object-cover" 
+                loading="lazy"
+                width="80"
+                height="80"
+              />
             </button>
           ))}
         </div>

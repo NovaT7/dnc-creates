@@ -6,6 +6,7 @@ import { CATEGORIES } from '../data/products';
 import ProductCard from '../components/ui/ProductCard';
 import ProductSkeleton from '../components/ui/ProductSkeleton';
 import { useProducts } from '../hooks/useProducts';
+import { optimizeImage } from '../utils/imgUtils';
 
 import logo2 from '../assets/images/logo2.png';
 
