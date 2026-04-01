@@ -17,7 +17,7 @@ export default function ProductCard({ product }) {
   };
 
   const imageUrl = product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0]);
-  const optimizedUrl = optimizeImage(imageUrl, { width: 600, quality: 70 });
+  const optimizedUrl = optimizeImage(imageUrl, { width: 400, quality: 60 });
 
   return (
     <motion.div 

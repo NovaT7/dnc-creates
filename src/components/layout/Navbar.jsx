@@ -102,7 +102,7 @@ export default function Navbar() {
 
           {/* Logo */}
           <div className="flex-1 md:flex-none flex justify-center md:justify-start">
-            <Link to="/" className="font-display text-3xl font-semibold">
+            <Link to="/" className="font-display text-xl sm:text-2xl md:text-3xl font-semibold tracking-[0.1em]">
               <span className={isHome && !isScrolled ? 'text-white' : 'text-shimmer'}>
                 DNC Creates
               </span>

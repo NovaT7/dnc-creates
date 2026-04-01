@@ -17,26 +17,27 @@ export default function Home() {
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative h-screen min-h-[600px] bg-deep-brown flex items-center justify-center overflow-hidden -mt-24 pt-24">
-        {/* Animated Background Sparkles */}
         <div className="absolute inset-0 z-0 opacity-20 pointer-events-none">
+          {/* Main Hero Sparkle - always rendered */}
           <motion.div 
             animate={{ opacity: [0.2, 0.8, 0.2] }} 
-            transition={{ duration: 4, repeat: Infinity }}
+            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
             className="absolute top-1/4 left-1/4"
           >
             <Sparkles className="text-champagne w-8 h-8" />
           </motion.div>
+          {/* Secondary Sparkles - hidden on small mobile to save CPU */}
           <motion.div 
             animate={{ opacity: [0.1, 0.5, 0.1] }} 
-            transition={{ duration: 5, repeat: Infinity, delay: 1 }}
-            className="absolute top-1/3 right-1/4"
+            transition={{ duration: 5, repeat: Infinity, delay: 1, ease: "linear" }}
+            className="absolute top-1/3 right-1/4 hidden sm:block"
           >
             <Sparkles className="text-champagne w-6 h-6" />
           </motion.div>
           <motion.div 
             animate={{ opacity: [0.2, 0.6, 0.2] }} 
-            transition={{ duration: 3, repeat: Infinity, delay: 2 }}
-            className="absolute bottom-1/4 right-1/3"
+            transition={{ duration: 3, repeat: Infinity, delay: 2, ease: "linear" }}
+            className="absolute bottom-1/4 right-1/3 hidden md:block"
           >
             <Sparkles className="text-champagne w-10 h-10" />
           </motion.div>
