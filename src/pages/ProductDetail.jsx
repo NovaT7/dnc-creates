@@ -28,8 +28,28 @@ function ImageGallery({ product }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Main image */}
-      <div className="bg-champagne rounded-sm overflow-hidden aspect-square w-full">
+      {/* Mobile Swipe Gallery (Hidden on Desktop) */}
+      <div 
+        className="flex md:hidden overflow-x-auto snap-x snap-mandatory w-full aspect-square bg-champagne rounded-sm"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+        `}</style>
+        {images.map((url, i) => (
+          <img
+            key={`mobile-${i}`}
+            src={optimizeImage(url, { width: 800, quality: 80 })}
+            alt={`${product.name} ${i + 1}`}
+            loading={i === 0 ? "eager" : "lazy"}
+            fetchPriority={i === 0 ? "high" : "auto"}
+            className="w-full h-full object-cover shrink-0 snap-center scrollbar-hide"
+          />
+        ))}
+      </div>
+
+      {/* Desktop Main image (Hidden on Mobile) */}
+      <div className="hidden md:block bg-champagne rounded-sm overflow-hidden aspect-square w-full">
         <img
           src={optimizeImage(images[activeIdx], { width: 1000, quality: 80 })}
           alt={product.name}
@@ -40,9 +60,10 @@ function ImageGallery({ product }) {
           className="w-full h-full object-cover transition-all duration-300"
         />
       </div>
-      {/* Thumbnails — only show if multiple images */}
+      
+      {/* Desktop Thumbnails — only show if multiple images */}
       {images.length > 1 && (
-        <div className="flex gap-2 flex-wrap">
+        <div className="hidden md:flex gap-2 flex-wrap">
           {images.map((url, i) => (
             <button
               key={i}
@@ -71,12 +92,13 @@ export default function ProductDetail() {
   const { id } = useParams();
   const { products, loading } = useProducts();
   const product = products.find(p => p.id === id);
-  const { addItem } = useCart();
+  const { addItem, items: cartItems } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   
   const [added, setAdded] = useState(false);
   
   const isWished = product ? isInWishlist(product.id) : false;
+  const isInCart = product ? cartItems.some(i => i.id === product.id) : false;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -181,8 +203,8 @@ export default function ProductDetail() {
                 className={`flex-grow py-4 px-8 font-body uppercase tracking-[0.2em] text-sm font-medium transition-all duration-300 flex items-center justify-center ${
                   !product.inStock
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    : added 
-                      ? 'bg-green-600 text-white' 
+                    : isInCart || added 
+                      ? 'bg-green-600 text-white hover:bg-green-700' 
                       : 'bg-rose-gold hover:bg-rose-gold-dark text-white'
                 }`}
               >
@@ -191,6 +213,10 @@ export default function ProductDetail() {
                 ) : added ? (
                   <>
                     <Check size={18} className="mr-2" /> Added to Cart
+                  </>
+                ) : isInCart ? (
+                  <>
+                    <Check size={18} className="mr-2" /> Add Another
                   </>
                 ) : (
                   'Add to Cart - ₹' + product.price
