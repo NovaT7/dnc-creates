@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { collection, doc, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, addDoc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { CATEGORIES } from '../../data/products';
 import { X, ImageIcon, Plus } from 'lucide-react';
@@ -143,10 +143,10 @@ export default function ProductForm({ product, onClose, onSaved }) {
       };
 
       if (isEdit) {
-        await updateDoc(doc(db, 'products', product.id), {
+        await setDoc(doc(db, 'products', product.id), {
           ...productData,
           updatedAt: serverTimestamp(),
-        });
+        }, { merge: true });
       } else {
         await addDoc(collection(db, 'products'), {
           ...productData,
