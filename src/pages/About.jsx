@@ -38,7 +38,7 @@ export default function About() {
             <div className="glass-card p-12 flex items-center justify-center relative overflow-hidden group">
               <div className="absolute inset-0 bg-rose-gold/5 transform rotate-3 -z-10 group-hover:rotate-6 transition-transform duration-500"></div>
               <img 
-                src="/src/assets/images/logo1.png" 
+                src={logo1} 
                 alt="DNC Creates Logo" 
                 className="w-full max-w-md drop-shadow-xl"
               />

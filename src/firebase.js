@@ -11,6 +11,11 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+// Check for missing configuration (common in new deployments)
+if (!firebaseConfig.apiKey) {
+  console.warn("Firebase configuration is missing! Set your VITE_FIREBASE_* environment variables in your deployment dashboard.");
+}
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);

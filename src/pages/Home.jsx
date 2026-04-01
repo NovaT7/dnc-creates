@@ -7,6 +7,8 @@ import ProductCard from '../components/ui/ProductCard';
 import ProductSkeleton from '../components/ui/ProductSkeleton';
 import { useProducts } from '../hooks/useProducts';
 
+import logo2 from '../assets/images/logo2.png';
+
 export default function Home() {
   const { featuredProducts, loading } = useProducts();
 
@@ -44,7 +46,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            src="/src/assets/images/logo2.png" 
+            src={logo2} 
             alt="DNC Monogram" 
             className="w-32 md:w-40 mb-6 drop-shadow-2xl"
           />
