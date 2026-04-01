@@ -105,7 +105,7 @@ export default function Home() {
 
       {/* Categories Strip */}
       <section className="bg-champagne py-12 border-b border-rose-gold/20">
-        <div className="max-w-7xl mx-auto px-6 overflow-x-auto scrolly flex items-center justify-center space-x-12 whitespace-nowrap">
+        <div className="max-w-7xl mx-auto px-6 overflow-x-auto scrolly flex items-center justify-start md:justify-center space-x-12 whitespace-nowrap">
           {CATEGORIES.slice(1).map((cat, i) => (
             <Link 
               key={cat} 
