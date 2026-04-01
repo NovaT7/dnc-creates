@@ -16,10 +16,10 @@ export default function Footer() {
               Elevate your everyday style with our timeless pieces.
             </p>
             <div className="flex space-x-4 pt-4">
-              <a href="#" className="hover:text-rose-gold transition-colors">
+              <a href="#" className="hover:text-rose-gold transition-colors" aria-label="Follow us on Instagram">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="hover:text-rose-gold transition-colors">
+              <a href="#" className="hover:text-rose-gold transition-colors" aria-label="Follow us on Facebook">
                 <Facebook size={20} />
               </a>
             </div>

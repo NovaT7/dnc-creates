@@ -42,8 +42,11 @@ export default function ProductCard({ product }) {
         {/* Image Box */}
         <div className="aspect-square w-full overflow-hidden bg-champagne mb-4 relative">
           <img 
-            src={product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0])} 
+            src={`${product.imageUrl || product.image || (product.imageUrls && product.imageUrls[0])}${((product.imageUrl || '').includes('unsplash') || (product.image || '').includes('unsplash')) ? '&w=600&q=80' : ''}`} 
             alt={product.name} 
+            loading="lazy"
+            width="600"
+            height="600"
             className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'opacity-60 grayscale' : ''}`}
           />
           {/* Overlay gradient for a premium feel on hover */}

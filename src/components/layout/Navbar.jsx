@@ -1,18 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X, LogOut, LayoutDashboard, Heart } from 'lucide-react';
+import { ShoppingBag, Menu, X, LogOut, LayoutDashboard, Heart, Search } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [navbarSearchQuery, setNavbarSearchQuery] = useState('');
+  
   const { totalItems } = useCart();
   const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const searchRef = useRef(null);
 
   const isHome = location.pathname === '/';
   
@@ -37,18 +43,31 @@ export default function Navbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsDropdownOpen(false);
+    setIsSearchOpen(false); // Close search on route change
   }, [location.pathname]);
 
-  // Close dropdown on outside click
+  // Close dropdown or search on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
       }
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setIsSearchOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (navbarSearchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(navbarSearchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setNavbarSearchQuery('');
+    }
+  };
 
   const navClasses = `fixed w-full top-0 z-50 transition-all duration-300 ${
     isHome && !isScrolled
@@ -73,7 +92,10 @@ export default function Navbar() {
           
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
-            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -97,26 +119,58 @@ export default function Navbar() {
 
           {/* Right: Admin + Cart + User */}
           <div className="flex items-center justify-end gap-4">
+            {/* Global Search */}
+            <div className="relative" ref={searchRef}>
+              <AnimatePresence>
+                {isSearchOpen && (
+                  <motion.form
+                    initial={{ width: 0, opacity: 0 }}
+                    animate={{ width: 200, opacity: 1 }}
+                    exit={{ width: 0, opacity: 0 }}
+                    onSubmit={handleSearchSubmit}
+                    className="absolute right-full mr-2 hidden md:block"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      autoFocus
+                      value={navbarSearchQuery}
+                      onChange={(e) => setNavbarSearchQuery(e.target.value)}
+                      className={`bg-transparent border-b border-rose-gold/50 outline-none text-sm transition-all py-1 ${isHome && !isScrolled ? 'text-white placeholder-white/50' : 'text-deep-brown placeholder-deep-brown/40'}`}
+                    />
+                  </motion.form>
+                )}
+              </AnimatePresence>
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="flex items-center justify-center hover:text-rose-gold transition-colors p-1"
+                aria-label={isSearchOpen ? "Close search" : "Open search"}
+                title="Search"
+              >
+                {isSearchOpen ? <X size={24} strokeWidth={1.5} /> : <Search size={24} strokeWidth={1.5} />}
+              </button>
+            </div>
+
             {/* Admin Panel Icon — only for admin */}
             {isAdmin && (
               <Link
                 to="/admin"
                 title="Admin Panel"
-                className="relative hover:text-rose-gold transition-colors"
+                className="p-1 hover:text-rose-gold transition-colors"
               >
-                <LayoutDashboard size={22} strokeWidth={1.5} />
+                <LayoutDashboard size={24} strokeWidth={1.5} />
               </Link>
             )}
 
             {/* Wishlist Icon */}
             {user && (
-              <Link to="/wishlist" className="relative hover:text-rose-gold transition-colors" title="Wishlist">
+              <Link to="/wishlist" className="p-1 hover:text-rose-gold transition-colors" title="Wishlist">
                 <Heart size={24} strokeWidth={1.5} />
               </Link>
             )}
 
             {/* Cart Icon */}
-            <Link to="/cart" className="relative hover:text-rose-gold transition-colors block">
+            <Link to="/cart" className="p-1 relative hover:text-rose-gold transition-colors block" aria-label={`View shopping cart with ${totalItems} items`}>
               <motion.div
                 key={bounceKey}
                 animate={bounceKey > 0 ? { scale: [1, 1.3, 0.9, 1.1, 1] } : {}}
@@ -206,6 +260,37 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Search Overlay — specifically for the "search icon" click */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`md:hidden absolute top-full left-0 w-full px-6 py-4 z-40 shadow-lg border-b border-rose-gold/10 ${
+              isHome && !isScrolled ? 'bg-deep-brown shadow-black/20' : 'bg-soft-white/95 backdrop-blur-md'
+            }`}
+          >
+            <form onSubmit={handleSearchSubmit} className="relative">
+              <input
+                type="text"
+                placeholder="Search our collection..."
+                autoFocus
+                value={navbarSearchQuery}
+                onChange={(e) => setNavbarSearchQuery(e.target.value)}
+                className="w-full bg-white border border-rose-gold/20 rounded-2xl px-5 py-3 pr-12 text-deep-brown font-body text-sm focus:outline-none focus:border-rose-gold shadow-inner"
+              />
+              <button 
+                type="submit" 
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-rose-gold hover:text-rose-gold-dark"
+              >
+                <Search size={20} />
+              </button>
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
@@ -216,6 +301,20 @@ export default function Navbar() {
             className="md:hidden bg-soft-white border-t border-rose-gold/20 overflow-hidden"
           >
             <div className="flex flex-col px-6 py-6 space-y-4 text-deep-brown">
+              {/* Mobile Search */}
+              <form onSubmit={handleSearchSubmit} className="mb-4 relative">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={navbarSearchQuery}
+                  onChange={(e) => setNavbarSearchQuery(e.target.value)}
+                  className="w-full bg-rose-gold/5 border border-rose-gold/20 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-rose-gold"
+                />
+                <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-gold">
+                  <Search size={16} />
+                </button>
+              </form>
+
               <NavLink to="/" className={linkClasses}>Home</NavLink>
               <NavLink to="/shop" className={linkClasses}>Shop</NavLink>
               <NavLink to="/about" className={linkClasses}>About</NavLink>

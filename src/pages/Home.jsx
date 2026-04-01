@@ -48,6 +48,9 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             src={logo2} 
             alt="DNC Monogram" 
+            fetchpriority="high"
+            width="160"
+            height="160"
             className="w-32 md:w-40 mb-6 drop-shadow-2xl"
           />
           <motion.p 
@@ -177,7 +180,7 @@ export default function Home() {
 
       {/* CTA Banner */}
       <section className="py-24 bg-deep-brown text-center px-4 relative overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4e0aebaa02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center mix-blend-overlay" />
+        <div className="absolute inset-0 z-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1599643478514-4a4e0aebaa02?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=60')] bg-cover bg-center mix-blend-overlay" />
         <div className="relative z-10 max-w-2xl mx-auto">
           <h2 className="text-4xl md:text-5xl text-champagne mb-6 leading-tight">
             Have a Dream Design?

@@ -31,6 +31,10 @@ function ImageGallery({ product }) {
         <img
           src={images[activeIdx]}
           alt={product.name}
+          width="800"
+          height="800"
+          loading="eager" 
+          fetchpriority="high"
           className="w-full h-full object-cover transition-all duration-300"
         />
       </div>

@@ -10,16 +10,18 @@ export default function Shop() {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialCategory = queryParams.get('category') || 'All';
+  const initialSearch = queryParams.get('search') || '';
 
   const { products, loading } = useProducts();
 
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [sortOrder, setSortOrder] = useState('featured'); // featured, low-high, high-low
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
 
   useEffect(() => {
     setActiveCategory(initialCategory);
-  }, [initialCategory]);
+    setSearchQuery(initialSearch);
+  }, [initialCategory, initialSearch]);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
