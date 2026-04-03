@@ -121,6 +121,16 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+            {isSignIn && (
+              <div className="mt-2 text-right">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-[10px] font-body text-deep-brown/40 hover:text-rose-gold uppercase tracking-widest transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+            )}
           </div>
           {!isSignIn && (
             <div>

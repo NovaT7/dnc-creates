@@ -4,7 +4,7 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut, onAuthStateChanged,
-  updateProfile
+  updateProfile, sendPasswordResetEmail
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
@@ -64,6 +64,10 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   };
 
+  const resetPassword = (email) => {
+    return sendPasswordResetEmail(auth, email);
+  };
+
   const value = {
     user,
     loading,
@@ -71,7 +75,8 @@ export function AuthProvider({ children }) {
     loginWithGoogle,
     loginWithEmail,
     registerWithEmail,
-    logout
+    logout,
+    resetPassword
   };
 
   return (
