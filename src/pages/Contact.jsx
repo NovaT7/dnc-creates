@@ -44,7 +44,7 @@ export default function Contact() {
       setIsSuccess(true);
       
       // Fallback native email trigger (optional, user requested "sends email to owner")
-      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'paulanik055@gmail.com';
+      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL;
       const mailtoLink = `mailto:${adminEmail}?subject=${encodeURIComponent(formData.type)}&body=${encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\nPhone: ${formData.phone}\n\nMessage:\n${formData.message}`)}`;
       window.location.href = mailtoLink;
 
